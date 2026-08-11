@@ -2,7 +2,7 @@
   <section class="dashboard-page">
     <div class="page-heading">
       <div>
-        <h2>金融影像智能风控驾驶舱</h2>
+        <h2>金融影像智能风控平台</h2>
         <p>AI驱动的金融业务影像智能分析与风险识别平台</p>
       </div>
       <el-tag type="success" effect="light"><el-icon><CircleCheckFilled /></el-icon>系统运行正常</el-tag>

@@ -21,7 +21,7 @@
         <el-table-column label="相似度" min-width="115"><template #default="{ row }">{{ formatSimilarity(row.similarity) }}</template></el-table-column>
         <el-table-column label="风险等级" min-width="110"><template #default="{ row }"><el-tag :type="riskTagType(row.riskLevel)" effect="light">{{ row.riskLevel }}</el-tag></template></el-table-column>
         <el-table-column label="状态" min-width="110"><template #default="{ row }"><el-tag :type="statusTagType(row.status)" effect="light">{{ row.status }}</el-tag></template></el-table-column>
-        <el-table-column label="操作" width="230" fixed="right"><template #default="{ row }"><el-button link type="primary" @click="openDetail(row.taskId)">查看详情</el-button><el-button link type="primary" @click="showReportHint">生成报告</el-button><el-button link type="primary" @click="retryTask">重新检测</el-button></template></el-table-column>
+        <el-table-column label="操作" width="160" fixed="right"><template #default="{ row }"><el-button link type="primary" @click="openDetail(row.taskId)">查看详情</el-button><el-button link type="primary" @click="retryTask">重新检测</el-button></template></el-table-column>
       </el-table>
       <el-empty v-else description="暂无检测任务"><el-button type="primary" @click="resetFilters">重置筛选</el-button></el-empty>
       <div v-if="filteredTasks.length > pageSize" class="pagination"><el-pagination v-model:current-page="currentPage" :page-size="pageSize" layout="prev, pager, next" :total="filteredTasks.length" /></div>
@@ -32,7 +32,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import { getDetectionTasks } from '../api/tasks'
 
@@ -53,7 +53,6 @@ const statusTagType = (status) => ({ 检测中: 'primary', 已完成: 'success',
 const queryTasks = async () => { loading.value = true; error.value = false; currentPage.value = 1; try { const res = await getDetectionTasks(filters); filteredTasks.value = res.data.records || [] } catch { error.value = true; filteredTasks.value = [] } finally { loading.value = false } }
 const resetFilters = () => { filters.taskId = ''; filters.dateRange = []; filters.status = ''; filters.riskLevel = ''; queryTasks() }
 const openDetail = (taskId) => router.push(`/tasks/${taskId}`)
-const showReportHint = () => ElMessage.info('报告生成功能将在后续阶段接入。')
 const retryTask = async () => { try { await ElMessageBox.confirm('将返回智能影像检测页面重新提交检测任务。', '重新检测', { confirmButtonText: '前往检测', cancelButtonText: '取消', type: 'warning' }); router.push('/detection') } catch {} }
 onMounted(queryTasks)
 </script>

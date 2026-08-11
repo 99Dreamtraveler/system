@@ -32,16 +32,15 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Lock, House, Search, FolderOpened, WarningFilled, DataAnalysis, Collection, Document, Setting, User, SwitchButton, Sunny, Moon } from '@element-plus/icons-vue'
+import { Lock, House, Search, FolderOpened, WarningFilled, DataAnalysis, Setting, User, SwitchButton, Sunny, Moon } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const isDark = ref(false)
 const menuItems = [
-  { path: '/dashboard', label: '首页驾驶舱', icon: House }, { path: '/detection', label: '智能影像检测', icon: Search },
+  { path: '/dashboard', label: '首页', icon: House }, { path: '/detection', label: '智能影像检测', icon: Search },
   { path: '/tasks', label: '检测任务', icon: FolderOpened }, { path: '/cases', label: '风险案件', icon: WarningFilled },
-  { path: '/analytics', label: '数据分析', icon: DataAnalysis }, { path: '/case-center', label: '案例中心', icon: Collection },
-  { path: '/reports', label: '检测报告', icon: Document }, { path: '/settings', label: '系统管理', icon: Setting },
+  { path: '/analytics', label: '数据分析', icon: DataAnalysis }, { path: '/settings', label: '系统管理', icon: Setting },
 ]
 const username = computed(() => JSON.parse(localStorage.getItem('user') || '{}').username || 'anonymous')
 const toggleTheme = () => { isDark.value = !isDark.value; const theme = isDark.value ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : ''); document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#1e293b' : '#3b82f6'); localStorage.setItem('theme', theme) }
