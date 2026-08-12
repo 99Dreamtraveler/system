@@ -11,6 +11,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from flask import Blueprint, request, jsonify
 from config import SIMILARITY_THRESHOLD, get_upload_session_dir
+from services.repository import save_similarity, fail_task
+from services.repository import create_operation_log
+from routes.auth import current_username
 
 from similarity_flask import detect_similarity, detect_from_folder, threshold_scan, get_device
 
@@ -40,6 +43,7 @@ def run_similarity():
         if folder_path:
             result = detect_from_folder(folder_path, threshold)
             if not result.get("success"):
+                if session_id: fail_task(session_id, result.get("message", "检测失败"))
                 return jsonify({"code": 500, "message": result.get("message", "检测失败")}), 500
 
             return jsonify({
@@ -60,8 +64,12 @@ def run_similarity():
             result = detect_similarity(face_images, str(session_dir), threshold)
 
             if not result.get("success"):
+                fail_task(session_id, "相似度检测失败")
+                create_operation_log(current_username(), "检测失败", f"检测任务 {session_id} 的相似度检测失败", "danger")
                 return jsonify({"code": 500, "message": "相似度检测失败"}), 500
 
+            save_similarity(session_id, result)
+            create_operation_log(current_username(), "完成检测", f"检测任务 {session_id} 已完成相似度检测", "success")
             return jsonify({
                 "code": 200,
                 "message": f"检索完成，共发现 {result['groups_count']} 个相似组",
@@ -74,8 +82,12 @@ def run_similarity():
         }), 400
 
     except FileNotFoundError as e:
+        if session_id: fail_task(session_id, str(e))
+        if session_id: create_operation_log(current_username(), "检测失败", f"检测任务 {session_id} 的相似度检测失败", "danger")
         return jsonify({"code": 404, "message": str(e)}), 404
     except Exception as e:
+        if session_id: fail_task(session_id, str(e))
+        if session_id: create_operation_log(current_username(), "检测失败", f"检测任务 {session_id} 的相似度检测失败", "danger")
         import traceback
         traceback.print_exc()
         return jsonify({"code": 500, "message": f"相似度检测失败: {str(e)}"}), 500

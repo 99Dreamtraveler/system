@@ -17,6 +17,8 @@ from routes.auth import auth_bp
 from routes.upload import upload_bp
 from routes.classify import classify_bp
 from routes.similarity import similarity_bp
+from routes.history import history_bp
+from services.repository import initialize_database
 
 
 def create_app():
@@ -34,6 +36,8 @@ def create_app():
     app.register_blueprint(upload_bp)
     app.register_blueprint(classify_bp)
     app.register_blueprint(similarity_bp)
+    app.register_blueprint(history_bp)
+    initialize_database()
 
     # ============================================
     # 静态文件服务 — Vue 前端

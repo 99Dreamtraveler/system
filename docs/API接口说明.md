@@ -378,4 +378,84 @@
 
 1. 后端实现历史接口后，先确认正式路径、认证、分页、错误码和图片授权规则，再替换 `src/api` 数据访问层。
 2. 页面组件不得把 Mock 数据当作真实检测结果，也不得直接调用本文中的待开发路径。
-3. 不得为满足文档而新增数据库、虚构后端路由、修改模型权重或改变上传、筛选、相似度检测和关联资料检索流程。
+3. 不得为满足文档而虚构接口、修改模型权重或改变上传、筛选、相似度检测和关联资料检索流程。检测结果持久化使用第九节说明的项目内 SQLite 实现。
+
+## 九、统一检测结果数据源（已实现）
+
+智能影像检测完成后，后端会将真实任务、相似度明细和风险案件保存到 `backend/detection_results.sqlite3`。该文件使用 Python 标准库 `sqlite3`，不依赖外部数据库服务；模型、模型权重和现有检测请求结构均未改变。
+
+数据形成链路：
+
+```text
+POST /api/upload/folder → detection_tasks（检测中）
+POST /api/classify → 更新影像与面签统计
+POST /api/similarity/detect → 保存相似度明细、生成风险案件、任务完成
+```
+
+### 1. 获取历史检测任务
+
+| 项目 | 说明 |
+| --- | --- |
+| 请求方式 / 路径 | `GET /api/history/tasks` |
+| 当前状态 | **已实现** |
+| 认证方式 | 前端沿用 `Authorization: Bearer <token>`；后端权限校验待后续完善。 |
+| 参数 | `page`、`pageSize`、`taskId`、`startTime`、`endTime`、`status`、`riskLevel`。 |
+| 返回 | `total`、`page`、`pageSize`、`records`；记录包含 `taskId`、时间、相似度、风险等级、状态和影像统计。 |
+
+### 2. 获取检测任务详情
+
+| 项目 | 说明 |
+| --- | --- |
+| 请求方式 / 路径 | `GET /api/history/tasks/{taskId}` |
+| 当前状态 | **已实现** |
+| 返回 | 任务基本信息、影像统计、面签筛选统计、相似度统计、风险统计、异常影像及相似度明细。 |
+
+### 3. 获取风险案件
+
+| 项目 | 说明 |
+| --- | --- |
+| 请求方式 / 路径 | `GET /api/risk/cases` |
+| 当前状态 | **已实现** |
+| 参数 | `caseId`、`businessId`、`startTime`、`endTime`、`riskLevel`、`status`。 |
+| 返回 | `caseId`、`taskId`、业务 A/B、面签图片相对路径、相似度、风险等级、规则化风险原因、发现时间和处理状态。 |
+
+### 4. 风险案件详情与处理
+
+| 操作 | 接口 | 当前状态 |
+| --- | --- | --- |
+| 查询详情 | `GET /api/risk/cases/{caseId}` | **已实现** |
+| 开始核查 | `POST /api/risk/cases/{caseId}/review` | **已实现** |
+| 确认风险 | `POST /api/risk/cases/{caseId}/confirm` | **已实现** |
+| 标记正常 | `POST /api/risk/cases/{caseId}/dismiss` | **已实现** |
+
+### 5. 获取影像检测分析统计
+
+| 项目 | 说明 |
+| --- | --- |
+| 请求方式 / 路径 | `GET /api/statistics/analytics` |
+| 当前状态 | **已实现** |
+| 参数 | `startDate`、`endDate`；或传入 `all=true` 获取从最早检测任务创建日期至 `endDate`（默认今天）的全部历史统计。 |
+| 返回 | `detectionTrend`、`riskTrend`、`similarityDistribution`、`imageCategoryDistribution`、`riskDistribution`、任务与案件摘要。 |
+
+### 6. 前端数据源切换
+
+默认真实数据模式下，任务、案件、分析、首页和操作日志请求上述接口。接口成功但无记录时，页面展示真实空状态或零值；接口失败时展示错误与重试，不回退 Mock。Mock 仅在显式设置 `VITE_DATA_SOURCE=mock` 时使用，不会写入 SQLite，也不会与真实统计混合。
+
+如需固定使用演示数据，可设置：
+
+```text
+VITE_DATA_SOURCE=mock
+```
+
+### 7. 操作日志
+
+| 项目 | 说明 |
+| --- | --- |
+| 请求方式 / 路径 | `GET /api/system/operation-logs` |
+| 当前状态 | **已实现** |
+| 认证方式 | 前端请求携带 `Authorization: Bearer <token>`；当前模拟认证以 Token 对应用户名作为日志操作者。 |
+| 参数 | `page`（默认 1）、`pageSize`（默认 20，最大 100）。 |
+| 返回 | `total`、`page`、`pageSize`、`records`；每项包含 `id`、`username`、`action`、`detail`、`type`、`occurredAt`。 |
+| 空数据 | SQLite 中没有日志时返回 `records: []` 与 `total: 0`；系统管理页面显示“暂无操作日志”，不使用 Mock。 |
+
+操作日志持久化在 `operation_logs` 表：`log_id`、`username`、`action`、`detail`、`type`、`occurred_at`。当前记录登录、上传影像、开始检测、完成检测、检测失败，以及案件开始核查、确认风险、标记为正常等成功业务操作；不记录密码、Token、绝对文件路径、影像内容或只读页面访问。

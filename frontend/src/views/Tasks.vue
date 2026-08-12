@@ -1,6 +1,6 @@
 <template>
   <section class="tasks-page">
-    <header class="page-heading"><div><h2>检测任务</h2><p>查看历史影像检测任务及检测结果。</p></div><el-tag type="info" effect="plain">MOCK · 待后端接入</el-tag></header>
+    <header class="page-heading"><div><h2>检测任务</h2><p>查看历史影像检测任务及检测结果。</p></div><el-tag v-if="isMock" type="info" effect="plain">MOCK · 后端无数据时展示</el-tag></header>
 
     <el-card class="filter-card" shadow="never">
       <el-form :model="filters" class="task-filter" @submit.prevent="queryTasks">
@@ -41,6 +41,7 @@ const filters = reactive({ taskId: '', dateRange: [], status: '', riskLevel: '' 
 const statusOptions = ['检测中', '已完成', '检测失败']
 const riskOptions = ['高风险', '中风险', '低风险']
 const loading = ref(false)
+const isMock = ref(false)
 const error = ref(false)
 const filteredTasks = ref([])
 const currentPage = ref(1)
@@ -50,7 +51,7 @@ const tableHeaderStyle = { background: 'var(--bg-card-hover)', color: 'var(--tex
 const formatSimilarity = (value) => (typeof value === 'number' ? `${value.toFixed(2)}%` : '--')
 const riskTagType = (level) => ({ 高风险: 'danger', 中风险: 'warning', 低风险: 'success' }[level] || 'info')
 const statusTagType = (status) => ({ 检测中: 'primary', 已完成: 'success', 检测失败: 'danger' }[status] || 'info')
-const queryTasks = async () => { loading.value = true; error.value = false; currentPage.value = 1; try { const res = await getDetectionTasks(filters); filteredTasks.value = res.data.records || [] } catch { error.value = true; filteredTasks.value = [] } finally { loading.value = false } }
+const queryTasks = async () => { loading.value = true; error.value = false; currentPage.value = 1; try { const res = await getDetectionTasks(filters); filteredTasks.value = res.data.records || []; isMock.value = Boolean(res.mock) } catch { error.value = true; filteredTasks.value = [] } finally { loading.value = false } }
 const resetFilters = () => { filters.taskId = ''; filters.dateRange = []; filters.status = ''; filters.riskLevel = ''; queryTasks() }
 const openDetail = (taskId) => router.push(`/tasks/${taskId}`)
 const retryTask = async () => { try { await ElMessageBox.confirm('将返回智能影像检测页面重新提交检测任务。', '重新检测', { confirmButtonText: '前往检测', cancelButtonText: '取消', type: 'warning' }); router.push('/detection') } catch {} }

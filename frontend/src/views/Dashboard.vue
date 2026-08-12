@@ -17,9 +17,9 @@
 
     <section class="chart-grid">
       <el-card class="panel-card trend-panel" shadow="never">
-        <template #header><div class="panel-header"><span>近7日检测趋势</span><div class="chart-legend"><i class="detection-dot"/>检测数量<i class="abnormal-dot"/>异常影像</div></div></template>
+        <template #header><div class="panel-header"><span>近7日检测趋势</span><div class="chart-legend"><i class="detection-dot"/>检测任务<i class="abnormal-dot"/>异常影像</div></div></template>
         <svg class="trend-chart" viewBox="0 0 720 260" preserveAspectRatio="none" role="img" aria-labelledby="trend-title trend-description">
-          <title id="trend-title">近7日检测趋势</title><desc id="trend-description">展示每日检测数量和异常影像数量。</desc>
+          <title id="trend-title">近7日检测趋势</title><desc id="trend-description">展示每日创建的检测任务数量和异常影像数量。</desc>
           <g class="chart-grid-lines"><line v-for="line in gridLines" :key="line" x1="46" :y1="line" x2="696" :y2="line"/></g>
           <g class="axis-labels"><text v-for="value in yAxisValues" :key="value" x="4" :y="yCoordinate(value) + 4">{{ value }}</text></g>
           <path class="detection-area" :d="detectionAreaPath"/><path class="detection-line" :d="detectionPath"/>
@@ -59,47 +59,52 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Picture, UserFilled, WarningFilled, CircleCloseFilled, Calendar, Finished, CircleCheckFilled } from '@element-plus/icons-vue'
-import { detectionTrend, getDashboardMetrics, getRiskDistribution, highRiskCases, recentTasks } from '../mock/dashboard'
+import { getAnalyticsStatistics } from '../api/analytics'
 
 const router = useRouter()
-const metrics = getDashboardMetrics()
-const distribution = getRiskDistribution()
+const statistics = ref({ detectionTrend: [], riskDistribution: { high: 0, medium: 0, low: 0 }, tasks: [], cases: [] })
+const detectionTrend = computed(() => statistics.value.detectionTrend.map((item) => ({ date: item.date.slice(5), detections: item.detectionCount, abnormalImages: item.abnormalCount })))
+const distribution = computed(() => statistics.value.riskDistribution)
+const recentTasks = computed(() => statistics.value.tasks.slice(0, 5).map((task) => ({ id: task.taskId, detectedAt: task.detectedAt || task.createdAt, riskLevel: ({ 高风险: 'high', 中风险: 'medium', 低风险: 'low' })[task.riskLevel], status: ({ 已完成: 'completed', 检测中: 'running', 检测失败: 'failed' })[task.status] })))
+const highRiskCases = computed(() => statistics.value.cases.filter((item) => item.riskLevel === '高风险').slice(0, 5).map((item) => ({ id: item.caseId, similarity: item.similarity / 100, foundAt: item.discoveredAt, status: item.status })))
+const metrics = computed(() => ({ totalImages: statistics.value.detectionTrend.reduce((sum, item) => sum + item.detectionCount, 0), affectedCount: statistics.value.tasks.reduce((sum, item) => sum + (item.interviewImages || 0), 0), abnormalImages: statistics.value.detectionTrend.reduce((sum, item) => sum + item.abnormalCount, 0), highRiskCases: distribution.value.high, todayTasks: statistics.value.tasks.filter((item) => item.createdAt?.startsWith(new Date().toISOString().slice(0, 10))).length, completedTasks: statistics.value.tasks.filter((item) => item.status === '已完成').length }))
 const chartWidth = 650
 const chartLeft = 46
 const chartTop = 20
 const chartHeight = 180
-const yMax = 400
+const yMax = computed(() => Math.max(1, ...detectionTrend.value.flatMap((item) => [item.detections, item.abnormalImages])))
 const gridLines = [20, 65, 110, 155, 200]
-const yAxisValues = [400, 300, 200, 100, 0]
-const xCoordinate = (index) => chartLeft + (index * chartWidth) / (detectionTrend.length - 1)
-const yCoordinate = (value) => chartTop + chartHeight - (value / yMax) * chartHeight
-const toPoints = (key) => detectionTrend.map((item, index) => ({ ...item, x: xCoordinate(index), y: yCoordinate(item[key]) }))
+const yAxisValues = computed(() => [yMax.value, Math.ceil(yMax.value * .75), Math.ceil(yMax.value * .5), Math.ceil(yMax.value * .25), 0])
+const xCoordinate = (index) => detectionTrend.value.length < 2 ? chartLeft + chartWidth / 2 : chartLeft + (index * chartWidth) / (detectionTrend.value.length - 1)
+const yCoordinate = (value) => chartTop + chartHeight - (value / yMax.value) * chartHeight
+const toPoints = (key) => detectionTrend.value.map((item, index) => ({ ...item, x: xCoordinate(index), y: yCoordinate(item[key]) }))
 const createPath = (points) => points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
-const detectionPoints = toPoints('detections')
-const abnormalPoints = toPoints('abnormalImages')
-const detectionPath = createPath(detectionPoints)
-const abnormalPath = createPath(abnormalPoints)
-const detectionAreaPath = `${detectionPath} L ${detectionPoints[detectionPoints.length - 1].x} 200 L ${detectionPoints[0].x} 200 Z`
+const detectionPoints = computed(() => toPoints('detections'))
+const abnormalPoints = computed(() => toPoints('abnormalImages'))
+const detectionPath = computed(() => createPath(detectionPoints.value))
+const abnormalPath = computed(() => createPath(abnormalPoints.value))
+const detectionAreaPath = computed(() => detectionPoints.value.length ? `${detectionPath.value} L ${detectionPoints.value[detectionPoints.value.length - 1].x} 200 L ${detectionPoints.value[0].x} 200 Z` : '')
 const riskItems = computed(() => [
-  { key: 'high', label: '高风险', value: distribution.high }, { key: 'medium', label: '中风险', value: distribution.medium }, { key: 'low', label: '低风险', value: distribution.low },
+  { key: 'high', label: '高风险', value: distribution.value.high }, { key: 'medium', label: '中风险', value: distribution.value.medium }, { key: 'low', label: '低风险', value: distribution.value.low },
 ])
 const riskTotal = computed(() => riskItems.value.reduce((sum, item) => sum + item.value, 0))
 const donutGradient = computed(() => {
-  const highEnd = (distribution.high / riskTotal.value) * 360
-  const mediumEnd = highEnd + (distribution.medium / riskTotal.value) * 360
+  if (!riskTotal.value) return 'conic-gradient(#e5e7eb 0deg 360deg)'
+  const highEnd = (distribution.value.high / riskTotal.value) * 360
+  const mediumEnd = highEnd + (distribution.value.medium / riskTotal.value) * 360
   return `conic-gradient(#ef4444 0deg ${highEnd}deg, #f59e0b ${highEnd}deg ${mediumEnd}deg, #10b981 ${mediumEnd}deg 360deg)`
 })
-const metricCards = [
-  { key: 'totalImages', label: '累计处理影像', value: metrics.totalImages, icon: Picture, tone: 'blue' },
-  { key: 'affectedCount', label: '累计影响人数', value: metrics.affectedCount, icon: UserFilled, tone: 'indigo' },
-  { key: 'abnormalImages', label: '疑似异常影像', value: metrics.abnormalImages, icon: WarningFilled, tone: 'amber' },
-  { key: 'highRiskCases', label: '高风险案件', value: metrics.highRiskCases, icon: CircleCloseFilled, tone: 'red' },
-  { key: 'todayTasks', label: '今日检测任务', value: metrics.todayTasks, icon: Calendar, tone: 'cyan' },
-  { key: 'completedTasks', label: '完成检测任务', value: metrics.completedTasks, icon: Finished, tone: 'green' },
-]
+const metricCards = computed(() => [
+  { key: 'totalImages', label: '累计处理影像', value: metrics.value.totalImages, icon: Picture, tone: 'blue' },
+  { key: 'affectedCount', label: '累计面签影像', value: metrics.value.affectedCount, icon: UserFilled, tone: 'indigo' },
+  { key: 'abnormalImages', label: '疑似异常影像', value: metrics.value.abnormalImages, icon: WarningFilled, tone: 'amber' },
+  { key: 'highRiskCases', label: '高风险案件', value: metrics.value.highRiskCases, icon: CircleCloseFilled, tone: 'red' },
+  { key: 'todayTasks', label: '今日检测任务', value: metrics.value.todayTasks, icon: Calendar, tone: 'cyan' },
+  { key: 'completedTasks', label: '完成检测任务', value: metrics.value.completedTasks, icon: Finished, tone: 'green' },
+])
 const tableHeaderStyle = { background: 'var(--bg-card-hover)', color: 'var(--text-secondary)', fontWeight: '600' }
 const formatNumber = (value) => new Intl.NumberFormat('zh-CN').format(value)
 const riskTagType = (level) => ({ high: 'danger', medium: 'warning', low: 'success' }[level])
@@ -107,6 +112,7 @@ const riskLabel = (level) => ({ high: '高风险', medium: '中风险', low: '�
 const statusLabel = (status) => ({ completed: '已完成', running: '进行中', pending: '待执行' }[status])
 const openTask = (id) => router.push({ path: '/tasks', query: { taskId: id } })
 const openCase = (id) => router.push({ path: '/risk-cases', query: { caseId: id } })
+onMounted(async () => { const res = await getAnalyticsStatistics('7d'); statistics.value = res.data })
 </script>
 
 <style scoped>

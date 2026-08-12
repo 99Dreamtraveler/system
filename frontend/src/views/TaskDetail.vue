@@ -1,6 +1,6 @@
 <template>
   <section class="task-detail-page">
-    <header class="page-heading"><div><el-button link type="primary" @click="router.push('/tasks')"><el-icon><ArrowLeft /></el-icon>返回任务列表</el-button><h2>检测任务详情</h2><p>查看任务基本信息、统计数据及检测结果。</p></div><el-tag type="info" effect="plain">MOCK · 待后端接入</el-tag></header>
+    <header class="page-heading"><div><el-button link type="primary" @click="router.push('/tasks')"><el-icon><ArrowLeft /></el-icon>返回任务列表</el-button><h2>检测任务详情</h2><p>查看任务基本信息、统计数据及检测结果。</p></div><el-tag v-if="isMock" type="info" effect="plain">MOCK · 后端无数据时展示</el-tag></header>
     <div v-if="loading" class="loading-panel"><el-skeleton :rows="8" animated /></div>
     <div v-else-if="error" class="state-panel"><el-alert title="检测任务加载失败，请稍后重试。" type="error" :closable="false" show-icon /><el-button type="primary" @click="loadTask">重新加载</el-button></div>
     <template v-else-if="task">
@@ -17,11 +17,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import { getDetectionTask } from '../api/tasks'
 
-const route = useRoute(); const router = useRouter(); const task = ref(null); const loading = ref(true); const error = ref(false)
+const route = useRoute(); const router = useRouter(); const task = ref(null); const loading = ref(true); const error = ref(false); const isMock = ref(false)
 const formatSimilarity = (value) => (typeof value === 'number' ? `${value.toFixed(2)}%` : '--')
 const riskTagType = (level) => ({ 高风险: 'danger', 中风险: 'warning', 低风险: 'success' }[level] || 'info')
 const statusTagType = (status) => ({ 检测中: 'primary', 已完成: 'success', 检测失败: 'danger' }[status] || 'info')
-const loadTask = async () => { loading.value = true; error.value = false; try { const res = await getDetectionTask(route.params.id); task.value = res.data } catch { error.value = true; task.value = null } finally { loading.value = false } }
+const loadTask = async () => { loading.value = true; error.value = false; try { const res = await getDetectionTask(route.params.id); task.value = res.data; isMock.value = Boolean(res.mock) } catch { error.value = true; task.value = null } finally { loading.value = false } }
 onMounted(loadTask)
 </script>
 

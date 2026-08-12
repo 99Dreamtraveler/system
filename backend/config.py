@@ -10,6 +10,7 @@ UPLOAD_FOLDER = BASE_DIR / "uploads"
 UPLOAD_FOLDER.mkdir(exist_ok=True)
 TASK_UPLOAD_FOLDER = UPLOAD_FOLDER / "tasks"
 TASK_UPLOAD_FOLDER.mkdir(exist_ok=True)
+DATABASE_PATH = BASE_DIR / "detection_results.sqlite3"
 
 WINDOWS_RESERVED_NAMES = {
     "CON", "PRN", "AUX", "NUL",

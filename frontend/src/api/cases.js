@@ -1,10 +1,15 @@
 import { riskCasesMock } from '../mock/cases'
+import api from './index'
+import { useMockData } from './dataSource'
 
 const pause = () => new Promise((resolve) => setTimeout(resolve, 180))
 const records = riskCasesMock.map((item) => ({ ...item, businessA: { ...item.businessA }, businessB: { ...item.businessB } }))
 
-// MOCK ONLY: replace with risk-case APIs after the backend contract is available.
 export const getRiskCases = async (filters = {}) => {
+  if (!useMockData()) {
+    const res = await api.get('/risk/cases', { params: { caseId: filters.caseId || undefined, businessId: filters.businessId || undefined, startTime: filters.dateRange?.[0], endTime: filters.dateRange?.[1], riskLevel: filters.riskLevel || undefined, status: filters.status || undefined } })
+    return { ...res, mock: false }
+  }
   await pause()
   const keyword = filters.caseId?.trim().toLowerCase()
   const businessId = filters.businessId?.trim().toLowerCase()
@@ -21,6 +26,9 @@ export const getRiskCases = async (filters = {}) => {
 }
 
 export const getRiskCase = async (caseId) => {
+  if (!useMockData()) {
+    return { ...(await api.get(`/risk/cases/${encodeURIComponent(caseId)}`)), mock: false }
+  }
   await pause()
   const item = records.find((record) => record.caseId === caseId)
   if (!item) throw new Error('风险案件不存在')
@@ -28,6 +36,10 @@ export const getRiskCase = async (caseId) => {
 }
 
 export const updateRiskCaseStatus = async (caseId, status) => {
+  if (!useMockData()) {
+    const endpoint = { '核查中': 'review', '已确认': 'confirm', '已排除': 'dismiss' }[status]
+    if (endpoint) return { ...(await api.post(`/risk/cases/${encodeURIComponent(caseId)}/${endpoint}`)), mock: false }
+  }
   await pause()
   const item = records.find((record) => record.caseId === caseId)
   if (!item) throw new Error('风险案件不存在')

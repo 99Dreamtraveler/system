@@ -1,5 +1,50 @@
 <template>
-  <section class="analytics-page"><header class="page-heading"><div><h2>影像检测数据分析</h2><p>基于统一检测任务与风险案件数据源展示检测和风险统计。</p></div><el-radio-group v-model="activeRange" size="default" @change="loadStatistics"><el-radio-button v-for="item in ranges" :key="item.key" :label="item.key">{{ item.label }}</el-radio-button></el-radio-group></header><div v-if="loading" class="loading-panel"><el-skeleton :rows="10" animated/></div><div v-else-if="error" class="state-panel"><el-alert title="数据加载失败，请稍后重试。" type="error" :closable="false" show-icon/><el-button type="primary" @click="loadStatistics">重新加载</el-button></div><template v-else-if="statistics"><section class="chart-grid"><el-card class="panel-card" shadow="never"><template #header><div class="panel-title">检测趋势</div></template><div v-if="hasTrend" class="chart-wrap"><div class="legend"><span><i class="line-dot detection"/>检测量</span><span><i class="line-dot abnormal"/>异常影像量</span></div><svg viewBox="0 0 680 250" class="line-chart" role="img"><g class="grid"><line v-for="line in gridLines" :key="line" x1="46" :y1="line" x2="660" :y2="line"/></g><path :d="linePath('detectionCount')" class="line detection"/><path :d="linePath('abnormalCount')" class="line abnormal"/><g v-for="(item,index) in statistics.detectionTrend" :key="item.date"><text class="axis-label" :x="pointX(index, statistics.detectionTrend.length)" y="239">{{ item.date.slice(5) }}</text></g></svg></div><el-empty v-else description="暂无数据" :image-size="70"/></el-card><el-card class="panel-card" shadow="never"><template #header><div class="panel-title">风险趋势</div></template><div v-if="hasTrend" class="chart-wrap"><div class="legend"><span><i class="line-dot high"/>高风险</span><span><i class="line-dot medium"/>中风险</span><span><i class="line-dot low"/>低风险</span></div><svg viewBox="0 0 680 250" class="line-chart" role="img"><g class="grid"><line v-for="line in gridLines" :key="line" x1="46" :y1="line" x2="660" :y2="line"/></g><path :d="linePath('high', statistics.riskTrend)" class="line high"/><path :d="linePath('medium', statistics.riskTrend)" class="line medium"/><path :d="linePath('low', statistics.riskTrend)" class="line low"/><g v-for="(item,index) in statistics.riskTrend" :key="item.date"><text class="axis-label" :x="pointX(index, statistics.riskTrend.length)" y="239">{{ item.date.slice(5) }}</text></g></svg></div><el-empty v-else description="暂无数据" :image-size="70"/></el-card></section><section class="chart-grid lower"><el-card class="panel-card" shadow="never"><template #header><div class="panel-title">相似度分布</div></template><div v-if="statistics.similarityDistribution.length" class="bar-chart"><el-tooltip v-for="item in statistics.similarityDistribution" :key="item.label" :content="`${item.label}：${item.count}`" placement="top"><div class="bar-item"><div class="bar-track"><span :style="{ height: `${percentage(item.count, maxSimilarityBucket)}%` }"/></div><strong>{{ item.count }}</strong><small>{{ item.label }}</small></div></el-tooltip></div><el-empty v-else description="暂无数据" :image-size="70"/></el-card><el-card class="panel-card" shadow="never"><template #header><div class="panel-title">风险分布</div></template><div v-if="riskTotal" class="donut-content"><div class="donut" :style="{ background: donutGradient }"><div><strong>{{ riskTotal }}</strong><span>风险案件</span></div></div><div class="risk-legend"><div v-for="item in riskLegend" :key="item.key"><i :class="item.key"/><span>{{ item.label }}</span><strong>{{ item.value }}</strong><em>{{ item.percent }}%</em></div></div></div><el-empty v-else description="暂无数据" :image-size="70"/></el-card></section><el-card class="panel-card category-card" shadow="never"><template #header><div class="panel-title">影像分类</div></template><div v-if="categoryItems.length" class="category-list"><div v-for="item in categoryItems" :key="item.key" class="category-row"><span>{{ item.label }}</span><div><i><b :style="{ width: `${percentage(item.value, maxCategory)}%` }"/></i><strong>{{ item.value }}</strong></div></div></div><el-empty v-else description="暂无数据" :image-size="70"/></el-card></template></section>
+  <section class="analytics-page">
+    <header class="page-heading">
+      <div><h2>影像检测数据分析</h2><p>基于统一检测任务与风险案件数据源展示检测和风险统计。</p></div>
+      <el-radio-group v-model="activeRange" @change="loadStatistics">
+        <el-radio-button v-for="item in ranges" :key="item.key" :label="item.key">{{ item.label }}</el-radio-button>
+      </el-radio-group>
+    </header>
+
+    <div v-if="loading" class="loading-panel"><el-skeleton :rows="10" animated /></div>
+    <div v-else-if="error" class="state-panel"><el-alert title="数据加载失败，请稍后重试。" type="error" :closable="false" show-icon /><el-button type="primary" @click="loadStatistics">重新加载</el-button></div>
+    <template v-else-if="statistics">
+      <section class="chart-grid">
+        <el-card class="panel-card" shadow="never">
+          <template #header><div class="panel-title">检测趋势</div></template>
+          <div v-if="hasTrend" class="chart-wrap">
+            <div class="legend"><span><i class="line-dot detection" />检测量</span><span><i class="line-dot abnormal" />异常影像量</span></div>
+            <svg viewBox="0 0 680 250" class="line-chart" role="img">
+              <g class="grid"><line v-for="line in gridLines" :key="line" x1="46" :y1="line" x2="660" :y2="line" /></g>
+              <path :d="linePath('detectionCount')" class="line detection" /><path :d="linePath('abnormalCount')" class="line abnormal" />
+              <g v-for="(item, index) in statistics.detectionTrend" :key="item.date"><text v-if="showDateLabel(index, statistics.detectionTrend.length)" class="axis-label" :x="pointX(index, statistics.detectionTrend.length)" y="239">{{ item.date.slice(5) }}</text></g>
+            </svg>
+          </div>
+          <el-empty v-else description="暂无数据" :image-size="70" />
+        </el-card>
+        <el-card class="panel-card" shadow="never">
+          <template #header><div class="panel-title">风险趋势</div></template>
+          <div v-if="hasTrend" class="chart-wrap">
+            <div class="legend"><span><i class="line-dot high" />高风险</span><span><i class="line-dot medium" />中风险</span><span><i class="line-dot low" />低风险</span></div>
+            <svg viewBox="0 0 680 250" class="line-chart" role="img">
+              <g class="grid"><line v-for="line in gridLines" :key="line" x1="46" :y1="line" x2="660" :y2="line" /></g>
+              <path :d="linePath('high', statistics.riskTrend)" class="line high" /><path :d="linePath('medium', statistics.riskTrend)" class="line medium" /><path :d="linePath('low', statistics.riskTrend)" class="line low" />
+              <g v-for="(item, index) in statistics.riskTrend" :key="item.date"><text v-if="showDateLabel(index, statistics.riskTrend.length)" class="axis-label" :x="pointX(index, statistics.riskTrend.length)" y="239">{{ item.date.slice(5) }}</text></g>
+            </svg>
+          </div>
+          <el-empty v-else description="暂无数据" :image-size="70" />
+        </el-card>
+      </section>
+
+      <section class="chart-grid lower">
+        <el-card class="panel-card" shadow="never"><template #header><div class="panel-title">相似度分布</div></template><div class="bar-chart"><el-tooltip v-for="item in statistics.similarityDistribution" :key="item.label" :content="`${item.label}：${item.count}`"><div class="bar-item"><div class="bar-track"><span :style="{ height: `${percentage(item.count, maxSimilarityBucket)}%` }" /></div><strong>{{ item.count }}</strong><small>{{ item.label }}</small></div></el-tooltip></div></el-card>
+        <el-card class="panel-card" shadow="never"><template #header><div class="panel-title">风险分布</div></template><div v-if="riskTotal" class="donut-content"><div class="donut" :style="{ background: donutGradient }"><div><strong>{{ riskTotal }}</strong><span>风险案件</span></div></div><div class="risk-legend"><div v-for="item in riskLegend" :key="item.key"><i :class="item.key" /><span>{{ item.label }}</span><strong>{{ item.value }}</strong><em>{{ item.percent }}%</em></div></div></div><el-empty v-else description="暂无数据" :image-size="70" /></el-card>
+      </section>
+
+      <el-card class="panel-card category-card" shadow="never"><template #header><div class="panel-title">影像分类</div></template><div class="category-list"><div v-for="item in categoryItems" :key="item.key" class="category-row"><span>{{ item.label }}</span><div><i><b :style="{ width: `${percentage(item.value, maxCategory)}%` }" /></i><strong>{{ item.value }}</strong></div></div></div></el-card>
+    </template>
+  </section>
 </template>
 
 <script setup>
@@ -7,12 +52,26 @@ import { computed, onMounted, ref } from 'vue'
 import { getAnalyticsStatistics } from '../api/analytics'
 import { imageCategoryLabels } from '../mock/analytics'
 
-const ranges = [{ key: 'today', label: '今日' }, { key: '7d', label: '近7日' }, { key: '30d', label: '近30日' }, { key: '90d', label: '近90日' }]
-const activeRange = ref('today'); const statistics = ref(null); const loading = ref(false); const error = ref(false); const gridLines = [30, 75, 120, 165, 210]
+const ranges = [{ key: 'today', label: '今日' }, { key: '7d', label: '近7日' }, { key: '30d', label: '近30日' }, { key: '90d', label: '近90日' }, { key: 'all', label: '所有数据' }]
+const activeRange = ref('today')
+const statistics = ref(null)
+const loading = ref(false)
+const error = ref(false)
+const gridLines = [30, 75, 120, 165, 210]
+const isLongRange = computed(() => ['30d', '90d', 'all'].includes(activeRange.value))
 const maxValue = computed(() => Math.max(1, ...(statistics.value?.detectionTrend || []).flatMap((item) => [item.detectionCount, item.abnormalCount]), ...(statistics.value?.riskTrend || []).flatMap((item) => [item.high, item.medium, item.low])))
-const hasTrend = computed(() => Boolean(statistics.value?.detectionTrend?.length)); const maxSimilarityBucket = computed(() => Math.max(1, ...(statistics.value?.similarityDistribution || []).map((item) => item.count))); const riskTotal = computed(() => Object.values(statistics.value?.riskDistribution || {}).reduce((sum, value) => sum + value, 0)); const maxCategory = computed(() => Math.max(1, ...Object.values(statistics.value?.imageCategoryDistribution || {})))
-const categoryItems = computed(() => Object.entries(statistics.value?.imageCategoryDistribution || {}).map(([key, value]) => ({ key, label: imageCategoryLabels[key], value }))); const percentage = (value, total) => Math.max(0, (value / total) * 100); const pointX = (index, length) => length < 2 ? 350 : 46 + (index * 614) / (length - 1); const pointY = (value) => 210 - (value / maxValue.value) * 180; const linePath = (key, data = statistics.value?.detectionTrend || []) => data.map((item, index) => `${index ? 'L' : 'M'} ${pointX(index, data.length)} ${pointY(item[key])}`).join(' ')
-const riskLegend = computed(() => [{ key: 'high', label: '高风险', value: statistics.value?.riskDistribution.high || 0 }, { key: 'medium', label: '中风险', value: statistics.value?.riskDistribution.medium || 0 }, { key: 'low', label: '低风险', value: statistics.value?.riskDistribution.low || 0 }].map((item) => ({ ...item, percent: riskTotal.value ? percentage(item.value, riskTotal.value).toFixed(1) : '0.0' }))); const donutGradient = computed(() => { const [high, medium] = riskLegend.value; const highEnd = percentage(high.value, riskTotal.value) * 3.6; const mediumEnd = highEnd + percentage(medium.value, riskTotal.value) * 3.6; return `conic-gradient(#ef4444 0deg ${highEnd}deg,#f59e0b ${highEnd}deg ${mediumEnd}deg,#10b981 ${mediumEnd}deg 360deg)` })
+const hasTrend = computed(() => Boolean(statistics.value?.detectionTrend?.length))
+const maxSimilarityBucket = computed(() => Math.max(1, ...(statistics.value?.similarityDistribution || []).map((item) => item.count)))
+const riskTotal = computed(() => Object.values(statistics.value?.riskDistribution || {}).reduce((sum, value) => sum + value, 0))
+const maxCategory = computed(() => Math.max(1, ...Object.values(statistics.value?.imageCategoryDistribution || {})))
+const categoryItems = computed(() => Object.entries(statistics.value?.imageCategoryDistribution || {}).map(([key, value]) => ({ key, label: imageCategoryLabels[key], value })))
+const percentage = (value, total) => Math.max(0, (value / total) * 100)
+const pointX = (index, length) => length < 2 ? 350 : 46 + (index * 614) / (length - 1)
+const pointY = (value) => 210 - (value / maxValue.value) * 180
+const linePath = (key, data = statistics.value?.detectionTrend || []) => data.map((item, index) => `${index ? 'L' : 'M'} ${pointX(index, data.length)} ${pointY(item[key])}`).join(' ')
+const showDateLabel = (index, length) => !isLongRange.value || index === 0 || index === length - 1
+const riskLegend = computed(() => [{ key: 'high', label: '高风险', value: statistics.value?.riskDistribution.high || 0 }, { key: 'medium', label: '中风险', value: statistics.value?.riskDistribution.medium || 0 }, { key: 'low', label: '低风险', value: statistics.value?.riskDistribution.low || 0 }].map((item) => ({ ...item, percent: riskTotal.value ? percentage(item.value, riskTotal.value).toFixed(1) : '0.0' })))
+const donutGradient = computed(() => { const [high, medium] = riskLegend.value; const highEnd = percentage(high.value, riskTotal.value) * 3.6; const mediumEnd = highEnd + percentage(medium.value, riskTotal.value) * 3.6; return `conic-gradient(#ef4444 0deg ${highEnd}deg,#f59e0b ${highEnd}deg ${mediumEnd}deg,#10b981 ${mediumEnd}deg 360deg)` })
 const loadStatistics = async () => { loading.value = true; error.value = false; try { const res = await getAnalyticsStatistics(activeRange.value); statistics.value = res.data } catch { error.value = true; statistics.value = null } finally { loading.value = false } }
 onMounted(loadStatistics)
 </script>

@@ -9,6 +9,9 @@ from config import (
     get_upload_session_dir,
     validate_task_folder_name,
 )
+from services.repository import create_task
+from services.repository import create_operation_log
+from routes.auth import current_username
 
 upload_bp = Blueprint("upload", __name__)
 
@@ -115,6 +118,8 @@ def upload_folder():
         if ext in valid_exts:
             image_files.append(f)
 
+    create_task(session_id, folder_name or session_id, len(saved_files))
+    create_operation_log(current_username(), "上传影像", f"上传检测任务 {session_id}，共 {len(saved_files)} 个文件", "info")
     return jsonify({
         "code": 200,
         "message": "上传成功",

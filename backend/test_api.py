@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 BASE_URL = "http://127.0.0.1:5000"
-DATASET_DIR = Path("E:/contest/dataset")
+DATASET_DIR = Path("D:\VScodeworkspace\数据集")
 
 # ============================================
 # Step 1: 上传文件夹

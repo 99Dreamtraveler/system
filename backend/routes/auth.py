@@ -1,6 +1,7 @@
 """认证相关 API — 任意输入均可登录"""
 import uuid
 from flask import Blueprint, request, jsonify, session
+from services.repository import create_operation_log
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -10,6 +11,14 @@ users = {}
 
 def generate_token():
     return str(uuid.uuid4())
+
+
+def current_username():
+    token = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+    for username, user in users.items():
+        if token and user.get("token") == token:
+            return username
+    return session.get("user", "anonymous")
 
 
 @auth_bp.route("/api/login", methods=["POST"])
@@ -32,6 +41,7 @@ def login():
     users[username]["token"] = token
     session["user"] = username
     session["token"] = token
+    create_operation_log(username, "登录", "用户登录系统", "primary")
 
     return jsonify({
         "code": 200,

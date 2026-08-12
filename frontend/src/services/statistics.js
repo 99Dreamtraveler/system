@@ -16,6 +16,10 @@ const formatDate = (date) => {
 }
 
 const getRangeStart = (range) => {
+  if (range === 'all') {
+    const dates = [...detectionTasksMock.map((item) => item.createdAt), ...riskCasesMock.map((item) => item.discoveredAt)]
+    return dates.length ? dates.map((item) => item.slice(0, 10)).sort()[0] : referenceDate
+  }
   const start = parseDate(referenceDate)
   start.setDate(start.getDate() - (rangeDays[range] || 1) + 1)
   return formatDate(start)

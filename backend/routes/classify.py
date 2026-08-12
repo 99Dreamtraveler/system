@@ -7,6 +7,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from flask import Blueprint, request, jsonify
 from config import get_upload_session_dir
+from services.repository import update_classification, fail_task
+from services.repository import create_operation_log
+from routes.auth import current_username
 
 # 直接导入 classify_flask.py 的分类核心函数
 from classify_flask import classify_folder, get_device
@@ -28,14 +31,18 @@ def run_classify():
         return jsonify({"code": 404, "message": "上传文件夹不存在，请先上传"}), 404
 
     try:
+        create_operation_log(current_username(), "开始检测", f"检测任务 {session_id} 开始面签照片筛选", "warning")
         result = classify_folder(str(session_dir))
 
         if not result.get("success"):
+            fail_task(session_id, "分类处理失败")
+            create_operation_log(current_username(), "检测失败", f"检测任务 {session_id} 的面签照片筛选失败", "danger")
             return jsonify({
                 "code": 500,
                 "message": "分类处理失败",
             }), 500
 
+        update_classification(session_id, result)
         return jsonify({
             "code": 200,
             "message": f"筛选完成，共检测到 {result['person_detected']} 张面签照 (总计 {result['total_images']} 张)",
@@ -43,6 +50,8 @@ def run_classify():
         })
 
     except Exception as e:
+        fail_task(session_id, str(e))
+        create_operation_log(current_username(), "检测失败", f"检测任务 {session_id} 的面签照片筛选失败", "danger")
         import traceback
         traceback.print_exc()
         return jsonify({"code": 500, "message": f"分类失败: {str(e)}"}), 500
