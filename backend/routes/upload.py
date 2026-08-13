@@ -9,7 +9,7 @@ from config import (
     get_upload_session_dir,
     validate_task_folder_name,
 )
-from services.repository import create_task
+from services.repository import create_task, task_exists
 from services.repository import create_operation_log
 from routes.auth import current_username
 
@@ -52,8 +52,11 @@ def upload_folder():
             return jsonify({"code": 400, "message": message}), 400
         session_id = folder_name
         session_dir = TASK_UPLOAD_FOLDER / session_id
-        if session_dir.exists():
-            return jsonify({"code": 409, "message": "同名上传任务已存在，请使用不同的文件夹名称"}), 409
+        if session_dir.exists() or task_exists(session_id):
+            return jsonify({
+                "code": 409,
+                "message": f"任务名称“{session_id}”已存在，请更换上传文件夹名称",
+            }), 409
     else:
         # Compatibility for existing callers that only supply files/session headers.
         session_id = request.headers.get("X-Session-Id", str(uuid.uuid4()))
@@ -71,7 +74,8 @@ def upload_folder():
     if not files:
         return jsonify({"code": 400, "message": "未选择文件"}), 400
 
-    # Legacy uploads preserve the prior overwrite behavior; named tasks never overwrite.
+    # Legacy uploads preserve the prior overwrite behavior. Named tasks passed the
+    # directory and database conflict checks above and are created only once.
     if not is_named_task and session_dir.exists():
         shutil.rmtree(session_dir)
     session_dir.mkdir(parents=True, exist_ok=True)

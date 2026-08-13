@@ -51,6 +51,12 @@ def get_upload_session_dir(session_id):
 
 # 模型路径 — 全部在 system/ 内
 YOLO_MODEL_PATH = SYSTEM_DIR / "yolo26n.pt"
+FINANCE_CLASSIFIER_MODEL_PATH = (
+    SYSTEM_DIR / "23_Finance_clarity" / "output" / "yolo_cls_runs"
+    / "finance_5cls" / "weights" / "best.pt"
+)
+FINANCE_CLASSIFIER_IMAGE_SIZE = 224
+FINANCE_CLASSIFIER_BATCH_SIZE = 16
 CLIP_MODEL_PATH = SYSTEM_DIR / "models" / "clip-vit-large-patch14"
 LORA_PATH = SYSTEM_DIR / "checkpoints" / "face_lora_v2_full" / "best_lora"
 PROJECTION_PATH = SYSTEM_DIR / "checkpoints" / "face_lora_v2_full" / "best_projection.pt"
@@ -62,6 +68,16 @@ PERSON_CLASS_ID = 0
 # 相似度配置
 BATCH_SIZE = 32
 SIMILARITY_THRESHOLD = 0.90
+
+# 贷款记录字段定义
+LOAN_FIELDS = ["bank_statement", "contract", "face_signing", "id_card_back", "id_card_front"]
+LOAN_FIELD_LABELS = {
+    "bank_statement": "银行流水",
+    "contract": "合同",
+    "face_signing": "面签照",
+    "id_card_back": "身份证背面",
+    "id_card_front": "身份证正面",
+}
 
 # 图片类型映射
 IMAGE_TYPES = {

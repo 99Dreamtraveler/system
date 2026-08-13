@@ -1,0 +1,20 @@
+{
+  "settings_version": "0.0.7",
+  "datasets_dir": "C:\\Users\\27383\\Desktop\\23-\u591a\u6a21\u6001\u6280\u672f\u4e0e\u6570\u636e\u6cbb\u7406\u8d5b\u9053-\u65e0\u9521\u519c\u5546\u884c-\u57fa\u4e8e\u591a\u6a21\u6001\u5927\u6a21\u578b\u7684\u91d1\u878d\u5f71\u50cf\u667a\u80fd\u76f8\u4f3c\u5ea6\u68c0\u6d4b\u6a21\u578b\\23_Finance_clarity\\datasets",
+  "weights_dir": "weights",
+  "runs_dir": "runs",
+  "uuid": "e9d975d0670eab80480512834b8e8b95b49c195168da36db3d59d1dad7ac3299",
+  "sync": true,
+  "api_key": "",
+  "openai_api_key": "",
+  "clearml": true,
+  "comet": true,
+  "dvc": true,
+  "mlflow": true,
+  "neptune": true,
+  "raytune": true,
+  "tensorboard": false,
+  "wandb": false,
+  "vscode_msg": true,
+  "openvino_msg": true
+}

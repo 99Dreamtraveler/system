@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "created_at": "2026-08-12T18:31:41",
+    "model": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\output\\yolo_cls_runs\\finance_5cls\\weights\\best.pt",
+    "parent_dir": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity",
+    "labels": [
+      "face_signing",
+      "id_card_front",
+      "id_card_back",
+      "bank_statement",
+      "contract"
+    ],
+    "folder_count": 1,
+    "total_images": 0
+  },
+  "folders": [
+    {
+      "folder_name": "demo_test",
+      "folder_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test",
+      "image_count": 0,
+      "class_counts": {
+        "face_signing": 0,
+        "id_card_front": 0,
+        "id_card_back": 0,
+        "bank_statement": 0,
+        "contract": 0
+      },
+      "images": []
+    }
+  ]
+}

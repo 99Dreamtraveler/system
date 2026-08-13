@@ -60,16 +60,15 @@ def run_classify():
 @classify_bp.route("/api/classify/status", methods=["GET"])
 def classify_status():
     """获取分类服务状态"""
-    from classify_flask import YOLO_MODEL_PATH, CONF_THRESHOLD, PERSON_CLASS_ID
+    from classify_flask import YOLO_MODEL_PATH, CLASS_LABELS
     return jsonify({
         "code": 200,
         "message": "服务正常运行",
         "data": {
             "status": "ready",
-            "model": "yolo26n",
-            "model_path_exists": YOLO_MODEL_PATH.exists(),
+            "model": "finance_5cls_best.pt",
+            "model_path_exists": YOLO_MODEL_PATH.is_file(),
             "device": str(get_device()),
-            "conf_threshold": CONF_THRESHOLD,
-            "person_class_id": PERSON_CLASS_ID,
+            "labels": list(CLASS_LABELS),
         }
     })

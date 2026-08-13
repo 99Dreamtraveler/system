@@ -61,7 +61,31 @@ def run_similarity():
             if not face_images:
                 return jsonify({"code": 400, "message": "请提供面签照列表 face_images"}), 400
 
-            result = detect_similarity(face_images, str(session_dir), threshold)
+            from services.repository import update_classification
+            filtered_images = [
+                img_info for img_info in face_images
+                if (session_dir / img_info.get("file_path", "")).is_file()
+            ]
+
+            # 更新分类统计到数据库
+            update_classification(session_id, {
+                "total_images": len(face_images),
+                "person_detected": len(filtered_images),
+            })
+
+            if len(filtered_images) < 2:
+                fail_task(session_id, "面签照YOLO筛选后有效图片不足")
+                create_operation_log(current_username(), "检测失败",
+                                     f"检测任务 {session_id} YOLO筛选后仅{len(filtered_images)}张（需≥2）", "danger")
+                return jsonify({
+                    "code": 400,
+                    "message": f"面签照筛选后有效图片不足（需至少2张，当前{len(filtered_images)}张）",
+                }), 400
+
+            create_operation_log(current_username(), "面签照分类完成",
+                                 f"五分类筛选出 {len(filtered_images)} 张面签合影照片", "success")
+
+            result = detect_similarity(filtered_images, str(session_dir), threshold)
 
             if not result.get("success"):
                 fail_task(session_id, "相似度检测失败")

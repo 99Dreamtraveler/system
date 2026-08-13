@@ -19,8 +19,8 @@ import { getDetectionTask } from '../api/tasks'
 
 const route = useRoute(); const router = useRouter(); const task = ref(null); const loading = ref(true); const error = ref(false); const isMock = ref(false)
 const formatSimilarity = (value) => (typeof value === 'number' ? `${value.toFixed(2)}%` : '--')
-const riskTagType = (level) => ({ 高风险: 'danger', 中风险: 'warning', 低风险: 'success' }[level] || 'info')
-const statusTagType = (status) => ({ 检测中: 'primary', 已完成: 'success', 检测失败: 'danger' }[status] || 'info')
+const riskTagType = (level) => ({ 待检测: 'info', 高风险: 'danger', 中风险: 'warning', 低风险: 'success' }[level] || 'info')
+const statusTagType = (status) => ({ 待检测: 'info', 检测中: 'primary', 已完成: 'success', 检测失败: 'danger' }[status] || 'info')
 const loadTask = async () => { loading.value = true; error.value = false; try { const res = await getDetectionTask(route.params.id); task.value = res.data; isMock.value = Boolean(res.mock) } catch { error.value = true; task.value = null } finally { loading.value = false } }
 onMounted(loadTask)
 </script>

@@ -24,7 +24,8 @@ def initialize_database():
           status TEXT NOT NULL, created_at TEXT NOT NULL, completed_at TEXT,
           duration INTEGER, total_images INTEGER DEFAULT 0, valid_images INTEGER DEFAULT 0,
           interview_images INTEGER DEFAULT 0, similarity REAL, risk_level TEXT,
-          error_message TEXT
+          error_message TEXT, progress INTEGER DEFAULT 0, current_step TEXT,
+          classification_result TEXT
         );
         CREATE TABLE IF NOT EXISTS similarity_results (
           result_id INTEGER PRIMARY KEY AUTOINCREMENT, task_id TEXT NOT NULL,
@@ -45,6 +46,14 @@ def initialize_database():
           occurred_at TEXT NOT NULL
         );
         """)
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(detection_tasks)").fetchall()}
+        if "progress" not in columns:
+            conn.execute("ALTER TABLE detection_tasks ADD COLUMN progress INTEGER DEFAULT 0")
+        if "current_step" not in columns:
+            conn.execute("ALTER TABLE detection_tasks ADD COLUMN current_step TEXT")
+        if "classification_result" not in columns:
+            conn.execute("ALTER TABLE detection_tasks ADD COLUMN classification_result TEXT")
+        conn.execute("UPDATE detection_tasks SET status='检测失败', progress=0, current_step=NULL, error_message='服务重启导致任务中断' WHERE status='检测中'")
 
 
 def risk_level(similarity):
@@ -69,20 +78,51 @@ def _relative_file_path(task_id, file_path):
 
 def create_task(task_id, folder_name, total_files):
     with _connection() as conn:
-        conn.execute("""INSERT OR REPLACE INTO detection_tasks
+        conn.execute("""INSERT INTO detection_tasks
           (task_id, session_id, folder_name, status, created_at, total_images)
-          VALUES (?, ?, ?, '检测中', ?, ?)""", (task_id, task_id, folder_name or task_id, _now(), total_files))
+          VALUES (?, ?, ?, '待检测', ?, ?)""", (task_id, task_id, folder_name or task_id, _now(), total_files))
+
+
+def task_exists(task_id):
+    """Return whether a persisted detection task already owns this task name."""
+    with _connection() as conn:
+        return conn.execute("SELECT 1 FROM detection_tasks WHERE task_id=?", (task_id,)).fetchone() is not None
+
+
+def set_task_progress(task_id, progress, current_step):
+    with _connection() as conn:
+        conn.execute("UPDATE detection_tasks SET progress=?, current_step=? WHERE task_id=?", (progress, current_step, task_id))
+
+
+def prepare_task_for_execution(task_id):
+    with _connection() as conn:
+        conn.execute("""UPDATE detection_tasks SET status='检测中', completed_at=NULL, duration=NULL,
+          similarity=NULL, risk_level=NULL, error_message=NULL, progress=1, current_step='等待执行'
+          WHERE task_id=?""", (task_id,))
 
 
 def update_classification(task_id, result):
     with _connection() as conn:
-        conn.execute("""UPDATE detection_tasks SET total_images = ?, valid_images = ?, interview_images = ?
-          WHERE task_id = ?""", (result.get("total_images", 0), result.get("total_images", 0), result.get("person_detected", 0), task_id))
+        conn.execute("""UPDATE detection_tasks
+          SET total_images = ?, valid_images = ?, interview_images = ?, classification_result = ?
+          WHERE task_id = ?""", (
+            result.get("total_images", 0),
+            result.get("total_images", 0),
+            result.get("person_detected", 0),
+            json.dumps({
+                "all_images": result.get("all_images", []),
+                "class_counts": {
+                    label: sum(item.get("pred_label") == label for item in result.get("all_images", []))
+                    for label in ("face_signing", "id_card_front", "id_card_back", "bank_statement", "contract")
+                },
+            }, ensure_ascii=False),
+            task_id,
+        ))
 
 
 def fail_task(task_id, error_message):
     with _connection() as conn:
-        conn.execute("UPDATE detection_tasks SET status='检测失败', completed_at=?, error_message=? WHERE task_id=?", (_now(), error_message, task_id))
+        conn.execute("UPDATE detection_tasks SET status='检测失败', progress=0, current_step=NULL, completed_at=?, error_message=? WHERE task_id=?", (_now(), error_message, task_id))
 
 
 def save_similarity(task_id, result):
@@ -96,7 +136,7 @@ def save_similarity(task_id, result):
         started = datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S")
         duration = max(0, int((datetime.now() - started).total_seconds()))
         conn.execute("""UPDATE detection_tasks SET status='已完成', completed_at=?, duration=?, valid_images=?,
-          similarity=?, risk_level=?, error_message=NULL WHERE task_id=?""", (now, duration, result.get("total_images", 0), max_similarity * 100 if pairs else None, overall_level, task_id))
+          similarity=?, risk_level=?, error_message=NULL, progress=100, current_step='检测完成' WHERE task_id=?""", (now, duration, result.get("total_images", 0), max_similarity * 100 if pairs else None, overall_level, task_id))
         conn.execute("DELETE FROM similarity_results WHERE task_id=?", (task_id,))
         conn.execute("DELETE FROM risk_cases WHERE task_id=?", (task_id,))
         for index, pair in enumerate(pairs, 1):
@@ -117,18 +157,25 @@ def save_similarity(task_id, result):
 
 
 def _task_payload(row):
+    # A NULL database value means similarity detection has not produced a risk decision.
+    risk_level = row["risk_level"] if row["status"] == "已完成" and row["risk_level"] else "待检测"
     return {"taskId": row["task_id"], "createdAt": row["created_at"], "detectedAt": row["completed_at"],
             "duration": f"{row['duration'] or 0} 秒" if row["completed_at"] else None, "similarity": row["similarity"],
-            "riskLevel": row["risk_level"] or "低风险", "status": row["status"],
+            "riskLevel": risk_level, "status": row["status"],
             "totalImages": row["total_images"], "validImages": row["valid_images"],
-            "interviewImages": row["interview_images"]}
+            "interviewImages": row["interview_images"], "progress": row["progress"] or 0,
+            "currentStep": row["current_step"], "errorMessage": row["error_message"]}
 
 
 def list_tasks(filters):
     clauses, values = [], []
-    mapping = {"taskId": "task_id LIKE ?", "status": "status = ?", "riskLevel": "risk_level = ?"}
+    mapping = {"taskId": "task_id LIKE ?", "status": "status = ?"}
     for key, clause in mapping.items():
         if filters.get(key): clauses.append(clause); values.append(f"%{filters[key]}%" if key == "taskId" else filters[key])
+    if filters.get("riskLevel") == "待检测":
+        clauses.append("risk_level IS NULL")
+    elif filters.get("riskLevel"):
+        clauses.append("risk_level = ?"); values.append(filters["riskLevel"])
     if filters.get("startTime"): clauses.append("created_at >= ?"); values.append(filters["startTime"])
     if filters.get("endTime"): clauses.append("created_at <= ?"); values.append(f"{filters['endTime']} 23:59:59")
     where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
@@ -143,12 +190,16 @@ def get_task(task_id):
         if not task: return None
         results = conn.execute("SELECT * FROM similarity_results WHERE task_id=? ORDER BY similarity DESC", (task_id,)).fetchall()
     payload = _task_payload(task)
+    try:
+        classification = json.loads(task["classification_result"] or "{}")
+    except json.JSONDecodeError:
+        classification = {}
     risks = {"high": 0, "medium": 0, "low": 0}
     abnormal = []
     for result in results:
         risks[{"高风险": "high", "中风险": "medium", "低风险": "low"}[result["risk_level"]]] += 1
         abnormal.append({"name": result["file_path"], "reason": f"与 {result['similar_file_path']} 相似度 {result['similarity']:.2f}%", "similarity": result["similarity"]})
-    payload.update({"imageStats": {"total": task["total_images"], "valid": task["valid_images"]}, "screeningStats": {"total": task["valid_images"], "interviewPhotos": task["interview_images"]}, "similarityStats": {"similarGroups": len(results), "suspiciousPairs": len(results), "maxSimilarity": task["similarity"]}, "riskStats": risks, "abnormalImages": abnormal, "suspicious_pairs": [dict(row) for row in results]})
+    payload.update({"imageStats": {"total": task["total_images"], "valid": task["valid_images"]}, "screeningStats": {"total": task["valid_images"], "interviewPhotos": task["interview_images"]}, "similarityStats": {"similarGroups": len(results), "suspiciousPairs": len(results), "maxSimilarity": task["similarity"]}, "riskStats": risks, "abnormalImages": abnormal, "suspicious_pairs": [dict(row) for row in results], "classification": classification})
     return payload
 
 

@@ -68,7 +68,7 @@
 | 返回数据 | `code`、`message`、`data.session_id`、`total_files`、`subdirs`、`image_count`、`images`（最多 50 个图片路径）。 |
 | 当前状态 | **已实现** |
 | 前端调用位置 | `FolderUpload.vue` 直接请求 `/api/upload/folder`；`src/api/index.js` 同时保留 `uploadFolder()` 封装。 |
-| 备注 | 新上传保存为 `backend/uploads/tasks/{folder_name}/`，并保留中文分类子目录和原始相对层级。`folder_name` 只能是合法单层目录名；同名任务返回 `409` 且不会覆盖已有文件。旧客户端未传该字段时仍沿用原会话目录和覆盖行为。 |
+| 备注 | 新上传保存为 `backend/uploads/tasks/{folder_name}/`，并保留中文分类子目录和原始相对层级。`folder_name` 只能是合法单层目录名；若 SQLite 的 `detection_tasks.task_id` 或同名任务目录任一已存在，接口返回 `409` 与“任务名称已存在，请更换上传文件夹名称”，且不会删除目录、覆盖任务、写入上传日志或改变已有结果。旧客户端未传该字段时仍沿用原会话目录和覆盖行为。 |
 
 ### 5. 上传会话信息
 
@@ -459,3 +459,16 @@ VITE_DATA_SOURCE=mock
 | 空数据 | SQLite 中没有日志时返回 `records: []` 与 `total: 0`；系统管理页面显示“暂无操作日志”，不使用 Mock。 |
 
 操作日志持久化在 `operation_logs` 表：`log_id`、`username`、`action`、`detail`、`type`、`occurred_at`。当前记录登录、上传影像、开始检测、完成检测、检测失败，以及案件开始核查、确认风险、标记为正常等成功业务操作；不记录密码、Token、绝对文件路径、影像内容或只读页面访问。
+
+### 8. 后台检测任务
+
+| 操作 | 接口 | 当前状态 |
+| --- | --- | --- |
+| 启动检测任务 | `POST /api/history/tasks/{taskId}/start` | **已实现** |
+| 查询任务状态 | `GET /api/history/tasks/{taskId}/status` | **已实现** |
+
+启动接口会立即返回，后端使用进程内后台线程继续执行面签筛选、YOLO 人物检测、特征提取和相似度计算；页面跳转不会取消任务。状态接口返回 `taskId`、`status`、`progress`、`currentStep`、`message` 和完成/失败时的 `result`。进度是业务阶段进度，不代表模型内部精确百分比。
+
+检测任务表新增 `progress`、`current_step` 字段。后端重启时，遗留的“检测中”任务会标记为“检测失败”，错误信息为“服务重启导致任务中断”；不会自动重复执行。
+
+风险等级字段说明：数据库中的 `risk_level` 在相似度检测完成前保持为空。任务处于“待检测”“检测中”或“检测失败”且没有真实风险结论时，历史任务接口返回 `riskLevel: "待检测"` 供前端展示；“待检测”不是风险判定，不会写入数据库，也不计入高风险、中风险或低风险统计。只有“已完成”任务才会返回真实的高风险、中风险或低风险。

@@ -38,8 +38,8 @@ import { getDetectionTasks } from '../api/tasks'
 
 const router = useRouter()
 const filters = reactive({ taskId: '', dateRange: [], status: '', riskLevel: '' })
-const statusOptions = ['检测中', '已完成', '检测失败']
-const riskOptions = ['高风险', '中风险', '低风险']
+const statusOptions = ['待检测', '检测中', '已完成', '检测失败']
+const riskOptions = ['待检测', '高风险', '中风险', '低风险']
 const loading = ref(false)
 const isMock = ref(false)
 const error = ref(false)
@@ -49,8 +49,8 @@ const pageSize = 5
 const pageTasks = computed(() => filteredTasks.value.slice((currentPage.value - 1) * pageSize, currentPage.value * pageSize))
 const tableHeaderStyle = { background: 'var(--bg-card-hover)', color: 'var(--text-secondary)', fontWeight: 600 }
 const formatSimilarity = (value) => (typeof value === 'number' ? `${value.toFixed(2)}%` : '--')
-const riskTagType = (level) => ({ 高风险: 'danger', 中风险: 'warning', 低风险: 'success' }[level] || 'info')
-const statusTagType = (status) => ({ 检测中: 'primary', 已完成: 'success', 检测失败: 'danger' }[status] || 'info')
+const riskTagType = (level) => ({ 待检测: 'info', 高风险: 'danger', 中风险: 'warning', 低风险: 'success' }[level] || 'info')
+const statusTagType = (status) => ({ 待检测: 'info', 检测中: 'primary', 已完成: 'success', 检测失败: 'danger' }[status] || 'info')
 const queryTasks = async () => { loading.value = true; error.value = false; currentPage.value = 1; try { const res = await getDetectionTasks(filters); filteredTasks.value = res.data.records || []; isMock.value = Boolean(res.mock) } catch { error.value = true; filteredTasks.value = [] } finally { loading.value = false } }
 const resetFilters = () => { filters.taskId = ''; filters.dateRange = []; filters.status = ''; filters.riskLevel = ''; queryTasks() }
 const openDetail = (taskId) => router.push(`/tasks/${taskId}`)

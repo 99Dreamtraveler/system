@@ -1,0 +1,285 @@
+{
+  "metadata": {
+    "created_at": "2026-08-12T18:54:12",
+    "model": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\output\\yolo_cls_runs\\finance_5cls\\weights\\best.pt",
+    "parent_dir": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test",
+    "labels": [
+      "face_signing",
+      "id_card_front",
+      "id_card_back",
+      "bank_statement",
+      "contract"
+    ],
+    "folder_count": 3,
+    "total_images": 15
+  },
+  "folders": [
+    {
+      "folder_name": "loan_001",
+      "folder_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_001",
+      "image_count": 5,
+      "class_counts": {
+        "face_signing": 1,
+        "id_card_front": 1,
+        "id_card_back": 1,
+        "bank_statement": 1,
+        "contract": 1
+      },
+      "images": [
+        {
+          "file_name": "bank_statement.jpg",
+          "folder_name": "loan_001",
+          "relative_path": "loan_001/bank_statement.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_001\\bank_statement.jpg",
+          "pred_label": "bank_statement",
+          "confidence": 0.9999994039535522,
+          "probabilities": {
+            "face_signing": 2.656203434980853e-07,
+            "id_card_front": 5.009389170140821e-08,
+            "id_card_back": 2.984468494560133e-07,
+            "bank_statement": 0.9999994039535522,
+            "contract": 7.8451805052282e-08
+          }
+        },
+        {
+          "file_name": "contract.jpg",
+          "folder_name": "loan_001",
+          "relative_path": "loan_001/contract.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_001\\contract.jpg",
+          "pred_label": "contract",
+          "confidence": 0.999963641166687,
+          "probabilities": {
+            "face_signing": 2.096419251529369e-07,
+            "id_card_front": 1.1141220568333665e-07,
+            "id_card_back": 2.983473734730069e-07,
+            "bank_statement": 3.572562854969874e-05,
+            "contract": 0.999963641166687
+          }
+        },
+        {
+          "file_name": "face_signing.jpg",
+          "folder_name": "loan_001",
+          "relative_path": "loan_001/face_signing.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_001\\face_signing.jpg",
+          "pred_label": "face_signing",
+          "confidence": 0.999998927116394,
+          "probabilities": {
+            "face_signing": 0.999998927116394,
+            "id_card_front": 1.3382808106143784e-07,
+            "id_card_back": 2.219267081216003e-08,
+            "bank_statement": 4.066454906137551e-08,
+            "contract": 9.68750555330189e-07
+          }
+        },
+        {
+          "file_name": "id_card_back.jpg",
+          "folder_name": "loan_001",
+          "relative_path": "loan_001/id_card_back.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_001\\id_card_back.jpg",
+          "pred_label": "id_card_back",
+          "confidence": 0.9999823570251465,
+          "probabilities": {
+            "face_signing": 9.321325222799715e-08,
+            "id_card_front": 1.068533310899511e-05,
+            "id_card_back": 0.9999823570251465,
+            "bank_statement": 2.3068862446962157e-06,
+            "contract": 4.481061750993831e-06
+          }
+        },
+        {
+          "file_name": "id_card_front.jpg",
+          "folder_name": "loan_001",
+          "relative_path": "loan_001/id_card_front.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_001\\id_card_front.jpg",
+          "pred_label": "id_card_front",
+          "confidence": 0.9999967813491821,
+          "probabilities": {
+            "face_signing": 9.82161736828857e-07,
+            "id_card_front": 0.9999967813491821,
+            "id_card_back": 1.963412387340213e-06,
+            "bank_statement": 2.1198060551341769e-07,
+            "contract": 1.7477628233564246e-08
+          }
+        }
+      ]
+    },
+    {
+      "folder_name": "loan_002",
+      "folder_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_002",
+      "image_count": 5,
+      "class_counts": {
+        "face_signing": 1,
+        "id_card_front": 1,
+        "id_card_back": 1,
+        "bank_statement": 1,
+        "contract": 1
+      },
+      "images": [
+        {
+          "file_name": "bank_statement.jpg",
+          "folder_name": "loan_002",
+          "relative_path": "loan_002/bank_statement.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_002\\bank_statement.jpg",
+          "pred_label": "bank_statement",
+          "confidence": 0.9999994039535522,
+          "probabilities": {
+            "face_signing": 2.656203434980853e-07,
+            "id_card_front": 5.009389170140821e-08,
+            "id_card_back": 2.984468494560133e-07,
+            "bank_statement": 0.9999994039535522,
+            "contract": 7.8451805052282e-08
+          }
+        },
+        {
+          "file_name": "contract.jpg",
+          "folder_name": "loan_002",
+          "relative_path": "loan_002/contract.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_002\\contract.jpg",
+          "pred_label": "contract",
+          "confidence": 0.999963641166687,
+          "probabilities": {
+            "face_signing": 2.096419251529369e-07,
+            "id_card_front": 1.1141220568333665e-07,
+            "id_card_back": 2.983473734730069e-07,
+            "bank_statement": 3.572562854969874e-05,
+            "contract": 0.999963641166687
+          }
+        },
+        {
+          "file_name": "face_signing.jpg",
+          "folder_name": "loan_002",
+          "relative_path": "loan_002/face_signing.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_002\\face_signing.jpg",
+          "pred_label": "face_signing",
+          "confidence": 0.999998927116394,
+          "probabilities": {
+            "face_signing": 0.999998927116394,
+            "id_card_front": 1.3382808106143784e-07,
+            "id_card_back": 2.219267081216003e-08,
+            "bank_statement": 4.066454906137551e-08,
+            "contract": 9.68750555330189e-07
+          }
+        },
+        {
+          "file_name": "id_card_back.jpg",
+          "folder_name": "loan_002",
+          "relative_path": "loan_002/id_card_back.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_002\\id_card_back.jpg",
+          "pred_label": "id_card_back",
+          "confidence": 0.9999823570251465,
+          "probabilities": {
+            "face_signing": 9.321325222799715e-08,
+            "id_card_front": 1.068533310899511e-05,
+            "id_card_back": 0.9999823570251465,
+            "bank_statement": 2.3068862446962157e-06,
+            "contract": 4.481061750993831e-06
+          }
+        },
+        {
+          "file_name": "id_card_front.jpg",
+          "folder_name": "loan_002",
+          "relative_path": "loan_002/id_card_front.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_002\\id_card_front.jpg",
+          "pred_label": "id_card_front",
+          "confidence": 0.9999967813491821,
+          "probabilities": {
+            "face_signing": 9.82161736828857e-07,
+            "id_card_front": 0.9999967813491821,
+            "id_card_back": 1.963412387340213e-06,
+            "bank_statement": 2.1198060551341769e-07,
+            "contract": 1.7477628233564246e-08
+          }
+        }
+      ]
+    },
+    {
+      "folder_name": "loan_003",
+      "folder_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_003",
+      "image_count": 5,
+      "class_counts": {
+        "face_signing": 1,
+        "id_card_front": 1,
+        "id_card_back": 1,
+        "bank_statement": 1,
+        "contract": 1
+      },
+      "images": [
+        {
+          "file_name": "bank_statement.jpg",
+          "folder_name": "loan_003",
+          "relative_path": "loan_003/bank_statement.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_003\\bank_statement.jpg",
+          "pred_label": "bank_statement",
+          "confidence": 0.9999994039535522,
+          "probabilities": {
+            "face_signing": 2.656203434980853e-07,
+            "id_card_front": 5.009389170140821e-08,
+            "id_card_back": 2.984468494560133e-07,
+            "bank_statement": 0.9999994039535522,
+            "contract": 7.8451805052282e-08
+          }
+        },
+        {
+          "file_name": "contract.jpg",
+          "folder_name": "loan_003",
+          "relative_path": "loan_003/contract.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_003\\contract.jpg",
+          "pred_label": "contract",
+          "confidence": 0.999963641166687,
+          "probabilities": {
+            "face_signing": 2.096419251529369e-07,
+            "id_card_front": 1.1141220568333665e-07,
+            "id_card_back": 2.983473734730069e-07,
+            "bank_statement": 3.572562854969874e-05,
+            "contract": 0.999963641166687
+          }
+        },
+        {
+          "file_name": "face_signing.jpg",
+          "folder_name": "loan_003",
+          "relative_path": "loan_003/face_signing.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_003\\face_signing.jpg",
+          "pred_label": "face_signing",
+          "confidence": 0.999998927116394,
+          "probabilities": {
+            "face_signing": 0.999998927116394,
+            "id_card_front": 1.3382808106143784e-07,
+            "id_card_back": 2.219267081216003e-08,
+            "bank_statement": 4.066454906137551e-08,
+            "contract": 9.68750555330189e-07
+          }
+        },
+        {
+          "file_name": "id_card_back.jpg",
+          "folder_name": "loan_003",
+          "relative_path": "loan_003/id_card_back.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_003\\id_card_back.jpg",
+          "pred_label": "id_card_back",
+          "confidence": 0.9999823570251465,
+          "probabilities": {
+            "face_signing": 9.321325222799715e-08,
+            "id_card_front": 1.068533310899511e-05,
+            "id_card_back": 0.9999823570251465,
+            "bank_statement": 2.3068862446962157e-06,
+            "contract": 4.481061750993831e-06
+          }
+        },
+        {
+          "file_name": "id_card_front.jpg",
+          "folder_name": "loan_003",
+          "relative_path": "loan_003/id_card_front.jpg",
+          "absolute_path": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\demo_test\\loan_003\\id_card_front.jpg",
+          "pred_label": "id_card_front",
+          "confidence": 0.9999967813491821,
+          "probabilities": {
+            "face_signing": 9.82161736828857e-07,
+            "id_card_front": 0.9999967813491821,
+            "id_card_back": 1.963412387340213e-06,
+            "bank_statement": 2.1198060551341769e-07,
+            "contract": 1.7477628233564246e-08
+          }
+        }
+      ]
+    }
+  ]
+}

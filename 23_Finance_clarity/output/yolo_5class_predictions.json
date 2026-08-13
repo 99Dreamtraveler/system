@@ -1,0 +1,825 @@
+{
+  "metadata": {
+    "total_images": 55,
+    "model": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\output\\yolo_cls_runs\\finance_5cls\\weights\\best.pt",
+    "labels": [
+      "face_signing",
+      "id_card_front",
+      "id_card_back",
+      "bank_statement",
+      "contract"
+    ],
+    "metrics": {
+      "overall": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "per_class": {
+        "face_signing": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "id_card_front": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "id_card_back": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "bank_statement": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "contract": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        }
+      }
+    }
+  },
+  "predictions": [
+    {
+      "image_id": "IMG_00051",
+      "file_path": "loan_011/bank_statement.jpg",
+      "image_type": "bank_statement",
+      "pred_label": "bank_statement",
+      "confidence": 0.9999991655349731,
+      "probabilities": {
+        "face_signing": 3.367211718341423e-07,
+        "id_card_front": 9.628922725823941e-08,
+        "id_card_back": 3.626895761499327e-07,
+        "bank_statement": 0.9999991655349731,
+        "contract": 4.403458930823945e-08
+      }
+    },
+    {
+      "image_id": "IMG_00052",
+      "file_path": "loan_011/contract.jpg",
+      "image_type": "contract",
+      "pred_label": "contract",
+      "confidence": 0.999968409538269,
+      "probabilities": {
+        "face_signing": 1.787805814501553e-07,
+        "id_card_front": 1.1495506413439216e-07,
+        "id_card_back": 3.058512163534033e-07,
+        "bank_statement": 3.0968472856329754e-05,
+        "contract": 0.999968409538269
+      }
+    },
+    {
+      "image_id": "IMG_00053",
+      "file_path": "loan_011/face_signing.jpg",
+      "image_type": "face_signing",
+      "pred_label": "face_signing",
+      "confidence": 0.9999998807907104,
+      "probabilities": {
+        "face_signing": 0.9999998807907104,
+        "id_card_front": 2.4231965767285146e-08,
+        "id_card_back": 2.4107575935516934e-09,
+        "bank_statement": 3.8430538751299537e-08,
+        "contract": 2.260990683566888e-08
+      }
+    },
+    {
+      "image_id": "IMG_00054",
+      "file_path": "loan_011/id_card_back.jpg",
+      "image_type": "id_card_back",
+      "pred_label": "id_card_back",
+      "confidence": 0.9999833106994629,
+      "probabilities": {
+        "face_signing": 8.105623550136443e-08,
+        "id_card_front": 1.0180157914874144e-05,
+        "id_card_back": 0.9999833106994629,
+        "bank_statement": 2.325105697309482e-06,
+        "contract": 4.0080431062961e-06
+      }
+    },
+    {
+      "image_id": "IMG_00055",
+      "file_path": "loan_011/id_card_front.jpg",
+      "image_type": "id_card_front",
+      "pred_label": "id_card_front",
+      "confidence": 0.9999939203262329,
+      "probabilities": {
+        "face_signing": 8.051859481383872e-07,
+        "id_card_front": 0.9999939203262329,
+        "id_card_back": 4.961986178386724e-06,
+        "bank_statement": 2.744156404332898e-07,
+        "contract": 7.958837500154914e-08
+      }
+    },
+    {
+      "image_id": "IMG_00066",
+      "file_path": "loan_014/bank_statement.jpg",
+      "image_type": "bank_statement",
+      "pred_label": "bank_statement",
+      "confidence": 0.9999991655349731,
+      "probabilities": {
+        "face_signing": 2.587705978385202e-07,
+        "id_card_front": 6.40121626815926e-08,
+        "id_card_back": 4.1204313561138406e-07,
+        "bank_statement": 0.9999991655349731,
+        "contract": 6.252813733453877e-08
+      }
+    },
+    {
+      "image_id": "IMG_00067",
+      "file_path": "loan_014/contract.jpg",
+      "image_type": "contract",
+      "pred_label": "contract",
+      "confidence": 0.9999576807022095,
+      "probabilities": {
+        "face_signing": 2.708084139158018e-07,
+        "id_card_front": 1.8415384772652033e-07,
+        "id_card_back": 4.5200101794762304e-07,
+        "bank_statement": 4.133220136282034e-05,
+        "contract": 0.9999576807022095
+      }
+    },
+    {
+      "image_id": "IMG_00068",
+      "file_path": "loan_014/face_signing.jpg",
+      "image_type": "face_signing",
+      "pred_label": "face_signing",
+      "confidence": 1.0,
+      "probabilities": {
+        "face_signing": 1.0,
+        "id_card_front": 8.830312175911459e-11,
+        "id_card_back": 7.694868180141423e-12,
+        "bank_statement": 2.0481408236072696e-11,
+        "contract": 8.430958708949277e-11
+      }
+    },
+    {
+      "image_id": "IMG_00069",
+      "file_path": "loan_014/id_card_back.jpg",
+      "image_type": "id_card_back",
+      "pred_label": "id_card_back",
+      "confidence": 0.9999847412109375,
+      "probabilities": {
+        "face_signing": 7.919000921674524e-08,
+        "id_card_front": 9.10568815015722e-06,
+        "id_card_back": 0.9999847412109375,
+        "bank_statement": 2.2664705738861812e-06,
+        "contract": 3.837147232843563e-06
+      }
+    },
+    {
+      "image_id": "IMG_00070",
+      "file_path": "loan_014/id_card_front.jpg",
+      "image_type": "id_card_front",
+      "pred_label": "id_card_front",
+      "confidence": 0.999997615814209,
+      "probabilities": {
+        "face_signing": 6.14442910773505e-07,
+        "id_card_front": 0.999997615814209,
+        "id_card_back": 1.6223158354478073e-06,
+        "bank_statement": 1.5689190036027867e-07,
+        "contract": 1.0246902881760889e-08
+      }
+    },
+    {
+      "image_id": "IMG_00096",
+      "file_path": "loan_020/bank_statement.jpg",
+      "image_type": "bank_statement",
+      "pred_label": "bank_statement",
+      "confidence": 0.9999979734420776,
+      "probabilities": {
+        "face_signing": 7.194441309366084e-07,
+        "id_card_front": 1.9967842490586918e-07,
+        "id_card_back": 8.413335876866768e-07,
+        "bank_statement": 0.9999979734420776,
+        "contract": 1.765062194181155e-07
+      }
+    },
+    {
+      "image_id": "IMG_00097",
+      "file_path": "loan_020/contract.jpg",
+      "image_type": "contract",
+      "pred_label": "contract",
+      "confidence": 0.9999661445617676,
+      "probabilities": {
+        "face_signing": 1.923035171103038e-07,
+        "id_card_front": 1.2666608029121562e-07,
+        "id_card_back": 3.3008666378009366e-07,
+        "bank_statement": 3.318352537462488e-05,
+        "contract": 0.9999661445617676
+      }
+    },
+    {
+      "image_id": "IMG_00098",
+      "file_path": "loan_020/face_signing.jpg",
+      "image_type": "face_signing",
+      "pred_label": "face_signing",
+      "confidence": 1.0,
+      "probabilities": {
+        "face_signing": 1.0,
+        "id_card_front": 3.846748697355906e-09,
+        "id_card_back": 5.178446560449856e-10,
+        "bank_statement": 7.665315049365518e-10,
+        "contract": 1.8973320692339257e-09
+      }
+    },
+    {
+      "image_id": "IMG_00099",
+      "file_path": "loan_020/id_card_back.jpg",
+      "image_type": "id_card_back",
+      "pred_label": "id_card_back",
+      "confidence": 0.9999821186065674,
+      "probabilities": {
+        "face_signing": 9.670760192648231e-08,
+        "id_card_front": 1.084689392882865e-05,
+        "id_card_back": 0.9999821186065674,
+        "bank_statement": 2.6206560050923144e-06,
+        "contract": 4.300842192606069e-06
+      }
+    },
+    {
+      "image_id": "IMG_00100",
+      "file_path": "loan_020/id_card_front.jpg",
+      "image_type": "id_card_front",
+      "pred_label": "id_card_front",
+      "confidence": 0.9999881982803345,
+      "probabilities": {
+        "face_signing": 1.2566870282171294e-06,
+        "id_card_front": 0.9999881982803345,
+        "id_card_back": 1.0090616342495196e-05,
+        "bank_statement": 3.80560635449001e-07,
+        "contract": 7.480088015654474e-08
+      }
+    },
+    {
+      "image_id": "IMG_00106",
+      "file_path": "loan_022/bank_statement.jpg",
+      "image_type": "bank_statement",
+      "pred_label": "bank_statement",
+      "confidence": 0.9999963045120239,
+      "probabilities": {
+        "face_signing": 1.3342076954359072e-06,
+        "id_card_front": 5.980579089737148e-07,
+        "id_card_back": 1.7302937749263947e-06,
+        "bank_statement": 0.9999963045120239,
+        "contract": 1.0436827579951569e-07
+      }
+    },
+    {
+      "image_id": "IMG_00107",
+      "file_path": "loan_022/contract.jpg",
+      "image_type": "contract",
+      "pred_label": "contract",
+      "confidence": 0.9999622106552124,
+      "probabilities": {
+        "face_signing": 2.369904876786677e-07,
+        "id_card_front": 1.5472191705612204e-07,
+        "id_card_back": 3.9470003798669495e-07,
+        "bank_statement": 3.698078580782749e-05,
+        "contract": 0.9999622106552124
+      }
+    },
+    {
+      "image_id": "IMG_00108",
+      "file_path": "loan_022/face_signing.jpg",
+      "image_type": "face_signing",
+      "pred_label": "face_signing",
+      "confidence": 1.0,
+      "probabilities": {
+        "face_signing": 1.0,
+        "id_card_front": 2.4894228345395675e-10,
+        "id_card_back": 3.749644691963816e-11,
+        "bank_statement": 9.757532455634266e-12,
+        "contract": 2.2920955411454003e-10
+      }
+    },
+    {
+      "image_id": "IMG_00109",
+      "file_path": "loan_022/id_card_back.jpg",
+      "image_type": "id_card_back",
+      "pred_label": "id_card_back",
+      "confidence": 0.9999822378158569,
+      "probabilities": {
+        "face_signing": 9.950149149062781e-08,
+        "id_card_front": 1.081748450815212e-05,
+        "id_card_back": 0.9999822378158569,
+        "bank_statement": 2.6154482384299627e-06,
+        "contract": 4.125624855078058e-06
+      }
+    },
+    {
+      "image_id": "IMG_00110",
+      "file_path": "loan_022/id_card_front.jpg",
+      "image_type": "id_card_front",
+      "pred_label": "id_card_front",
+      "confidence": 0.9999762773513794,
+      "probabilities": {
+        "face_signing": 2.139018988600583e-06,
+        "id_card_front": 0.9999762773513794,
+        "id_card_back": 2.0529931134660728e-05,
+        "bank_statement": 8.756584293223568e-07,
+        "contract": 2.612751472952368e-07
+      }
+    },
+    {
+      "image_id": "IMG_00131",
+      "file_path": "loan_027/bank_statement.jpg",
+      "image_type": "bank_statement",
+      "pred_label": "bank_statement",
+      "confidence": 0.9999966621398926,
+      "probabilities": {
+        "face_signing": 1.257792291653459e-06,
+        "id_card_front": 4.213747217818309e-07,
+        "id_card_back": 1.3616875094157876e-06,
+        "bank_statement": 0.9999966621398926,
+        "contract": 1.7869648161195073e-07
+      }
+    },
+    {
+      "image_id": "IMG_00132",
+      "file_path": "loan_027/contract.jpg",
+      "image_type": "contract",
+      "pred_label": "contract",
+      "confidence": 0.9999697208404541,
+      "probabilities": {
+        "face_signing": 1.7638008387166337e-07,
+        "id_card_front": 1.0587161369812748e-07,
+        "id_card_back": 2.891001713578589e-07,
+        "bank_statement": 2.9782244382658973e-05,
+        "contract": 0.9999697208404541
+      }
+    },
+    {
+      "image_id": "IMG_00133",
+      "file_path": "loan_027/face_signing.jpg",
+      "image_type": "face_signing",
+      "pred_label": "face_signing",
+      "confidence": 1.0,
+      "probabilities": {
+        "face_signing": 1.0,
+        "id_card_front": 6.994221313227911e-10,
+        "id_card_back": 3.810722293273727e-10,
+        "bank_statement": 2.4573765244895185e-10,
+        "contract": 7.094844711730275e-10
+      }
+    },
+    {
+      "image_id": "IMG_00134",
+      "file_path": "loan_027/id_card_back.jpg",
+      "image_type": "id_card_back",
+      "pred_label": "id_card_back",
+      "confidence": 0.9999849796295166,
+      "probabilities": {
+        "face_signing": 7.125502321514432e-08,
+        "id_card_front": 8.66198752191849e-06,
+        "id_card_back": 0.9999849796295166,
+        "bank_statement": 2.196640707552433e-06,
+        "contract": 4.018720574094914e-06
+      }
+    },
+    {
+      "image_id": "IMG_00135",
+      "file_path": "loan_027/id_card_front.jpg",
+      "image_type": "id_card_front",
+      "pred_label": "id_card_front",
+      "confidence": 0.9999889135360718,
+      "probabilities": {
+        "face_signing": 1.3238603742138366e-06,
+        "id_card_front": 0.9999889135360718,
+        "id_card_back": 9.204244634020142e-06,
+        "bank_statement": 4.232991273056541e-07,
+        "contract": 8.199495482585917e-08
+      }
+    },
+    {
+      "image_id": "IMG_00136",
+      "file_path": "loan_028/bank_statement.jpg",
+      "image_type": "bank_statement",
+      "pred_label": "bank_statement",
+      "confidence": 0.9999990463256836,
+      "probabilities": {
+        "face_signing": 3.109469446371804e-07,
+        "id_card_front": 8.830417641547683e-08,
+        "id_card_back": 4.2640093056434125e-07,
+        "bank_statement": 0.9999990463256836,
+        "contract": 9.180519100482343e-08
+      }
+    },
+    {
+      "image_id": "IMG_00137",
+      "file_path": "loan_028/contract.jpg",
+      "image_type": "contract",
+      "pred_label": "contract",
+      "confidence": 0.9999594688415527,
+      "probabilities": {
+        "face_signing": 1.9708609499957674e-07,
+        "id_card_front": 1.1705740377010443e-07,
+        "id_card_back": 3.476562255855242e-07,
+        "bank_statement": 3.9812330214772373e-05,
+        "contract": 0.9999594688415527
+      }
+    },
+    {
+      "image_id": "IMG_00138",
+      "file_path": "loan_028/face_signing.jpg",
+      "image_type": "face_signing",
+      "pred_label": "face_signing",
+      "confidence": 1.0,
+      "probabilities": {
+        "face_signing": 1.0,
+        "id_card_front": 3.663198633319098e-10,
+        "id_card_back": 9.971608261327702e-11,
+        "bank_statement": 6.989096801301997e-11,
+        "contract": 1.4789400260006857e-10
+      }
+    },
+    {
+      "image_id": "IMG_00139",
+      "file_path": "loan_028/id_card_back.jpg",
+      "image_type": "id_card_back",
+      "pred_label": "id_card_back",
+      "confidence": 0.9999827146530151,
+      "probabilities": {
+        "face_signing": 1.0448994913758725e-07,
+        "id_card_front": 1.0158002623938955e-05,
+        "id_card_back": 0.9999827146530151,
+        "bank_statement": 2.7825280994875357e-06,
+        "contract": 4.346602054283721e-06
+      }
+    },
+    {
+      "image_id": "IMG_00140",
+      "file_path": "loan_028/id_card_front.jpg",
+      "image_type": "id_card_front",
+      "pred_label": "id_card_front",
+      "confidence": 0.999997615814209,
+      "probabilities": {
+        "face_signing": 5.701264740309853e-07,
+        "id_card_front": 0.999997615814209,
+        "id_card_back": 1.6609019439783879e-06,
+        "bank_statement": 1.6217873621826584e-07,
+        "contract": 7.203040830461305e-09
+      }
+    },
+    {
+      "image_id": "IMG_00231",
+      "file_path": "loan_047/bank_statement.jpg",
+      "image_type": "bank_statement",
+      "pred_label": "bank_statement",
+      "confidence": 0.9999971389770508,
+      "probabilities": {
+        "face_signing": 1.18028515316837e-06,
+        "id_card_front": 4.4415409661269223e-07,
+        "id_card_back": 1.12972998067562e-06,
+        "bank_statement": 0.9999971389770508,
+        "contract": 1.0808074790702449e-07
+      }
+    },
+    {
+      "image_id": "IMG_00232",
+      "file_path": "loan_047/contract.jpg",
+      "image_type": "contract",
+      "pred_label": "contract",
+      "confidence": 0.9999580383300781,
+      "probabilities": {
+        "face_signing": 2.595797923277132e-07,
+        "id_card_front": 1.6296316118769028e-07,
+        "id_card_back": 4.433661047187343e-07,
+        "bank_statement": 4.101185913896188e-05,
+        "contract": 0.9999580383300781
+      }
+    },
+    {
+      "image_id": "IMG_00233",
+      "file_path": "loan_047/face_signing.jpg",
+      "image_type": "face_signing",
+      "pred_label": "face_signing",
+      "confidence": 0.9999995231628418,
+      "probabilities": {
+        "face_signing": 0.9999995231628418,
+        "id_card_front": 9.10565773892813e-08,
+        "id_card_back": 2.7617804221335973e-07,
+        "bank_statement": 9.160891600856758e-09,
+        "contract": 5.922667156710304e-08
+      }
+    },
+    {
+      "image_id": "IMG_00234",
+      "file_path": "loan_047/id_card_back.jpg",
+      "image_type": "id_card_back",
+      "pred_label": "id_card_back",
+      "confidence": 0.9999839067459106,
+      "probabilities": {
+        "face_signing": 7.878724517240698e-08,
+        "id_card_front": 8.63955392560456e-06,
+        "id_card_back": 0.9999839067459106,
+        "bank_statement": 2.3357597456197254e-06,
+        "contract": 4.968631856172578e-06
+      }
+    },
+    {
+      "image_id": "IMG_00235",
+      "file_path": "loan_047/id_card_front.jpg",
+      "image_type": "id_card_front",
+      "pred_label": "id_card_front",
+      "confidence": 0.9999945163726807,
+      "probabilities": {
+        "face_signing": 1.130256009673758e-06,
+        "id_card_front": 0.9999945163726807,
+        "id_card_back": 4.03407238991349e-06,
+        "bank_statement": 3.4531038295426697e-07,
+        "contract": 4.0014917601638444e-08
+      }
+    },
+    {
+      "image_id": "IMG_00261",
+      "file_path": "loan_053/bank_statement.jpg",
+      "image_type": "bank_statement",
+      "pred_label": "bank_statement",
+      "confidence": 0.9999978542327881,
+      "probabilities": {
+        "face_signing": 7.929757543934102e-07,
+        "id_card_front": 2.6794077712111175e-07,
+        "id_card_back": 9.894686172629008e-07,
+        "bank_statement": 0.9999978542327881,
+        "contract": 1.1104707198228425e-07
+      }
+    },
+    {
+      "image_id": "IMG_00262",
+      "file_path": "loan_053/contract.jpg",
+      "image_type": "contract",
+      "pred_label": "contract",
+      "confidence": 0.9999656677246094,
+      "probabilities": {
+        "face_signing": 2.0458588778637932e-07,
+        "id_card_front": 1.3571421675351303e-07,
+        "id_card_back": 3.4342130561526574e-07,
+        "bank_statement": 3.3605771022848785e-05,
+        "contract": 0.9999656677246094
+      }
+    },
+    {
+      "image_id": "IMG_00263",
+      "file_path": "loan_053/face_signing.jpg",
+      "image_type": "face_signing",
+      "pred_label": "face_signing",
+      "confidence": 1.0,
+      "probabilities": {
+        "face_signing": 1.0,
+        "id_card_front": 1.815638484004012e-08,
+        "id_card_back": 7.718350958363374e-10,
+        "bank_statement": 5.879503106598349e-09,
+        "contract": 5.127391400350234e-09
+      }
+    },
+    {
+      "image_id": "IMG_00264",
+      "file_path": "loan_053/id_card_back.jpg",
+      "image_type": "id_card_back",
+      "pred_label": "id_card_back",
+      "confidence": 0.9999839067459106,
+      "probabilities": {
+        "face_signing": 7.890333364457547e-08,
+        "id_card_front": 9.492314347880892e-06,
+        "id_card_back": 0.9999839067459106,
+        "bank_statement": 2.310011495865183e-06,
+        "contract": 4.2080614548467565e-06
+      }
+    },
+    {
+      "image_id": "IMG_00265",
+      "file_path": "loan_053/id_card_front.jpg",
+      "image_type": "id_card_front",
+      "pred_label": "id_card_front",
+      "confidence": 0.9999945163726807,
+      "probabilities": {
+        "face_signing": 8.954151553552947e-07,
+        "id_card_front": 0.9999945163726807,
+        "id_card_back": 4.236526820022846e-06,
+        "bank_statement": 2.911448575559916e-07,
+        "contract": 3.9570611676253975e-08
+      }
+    },
+    {
+      "image_id": "IMG_00266",
+      "file_path": "loan_054/bank_statement.jpg",
+      "image_type": "bank_statement",
+      "pred_label": "bank_statement",
+      "confidence": 0.9999982118606567,
+      "probabilities": {
+        "face_signing": 5.875182296222192e-07,
+        "id_card_front": 2.653673334407358e-07,
+        "id_card_back": 8.888798674888676e-07,
+        "bank_statement": 0.9999982118606567,
+        "contract": 6.642432026637834e-08
+      }
+    },
+    {
+      "image_id": "IMG_00267",
+      "file_path": "loan_054/contract.jpg",
+      "image_type": "contract",
+      "pred_label": "contract",
+      "confidence": 0.9999649524688721,
+      "probabilities": {
+        "face_signing": 1.8240068300201528e-07,
+        "id_card_front": 1.1386205756025447e-07,
+        "id_card_back": 3.3558441714376386e-07,
+        "bank_statement": 3.436111001065001e-05,
+        "contract": 0.9999649524688721
+      }
+    },
+    {
+      "image_id": "IMG_00268",
+      "file_path": "loan_054/face_signing.jpg",
+      "image_type": "face_signing",
+      "pred_label": "face_signing",
+      "confidence": 1.0,
+      "probabilities": {
+        "face_signing": 1.0,
+        "id_card_front": 4.021788235775148e-09,
+        "id_card_back": 3.3756364370418623e-10,
+        "bank_statement": 1.4428691574863706e-09,
+        "contract": 2.297178003374256e-09
+      }
+    },
+    {
+      "image_id": "IMG_00269",
+      "file_path": "loan_054/id_card_back.jpg",
+      "image_type": "id_card_back",
+      "pred_label": "id_card_back",
+      "confidence": 0.9999819993972778,
+      "probabilities": {
+        "face_signing": 9.25771246329532e-08,
+        "id_card_front": 1.1347742656653281e-05,
+        "id_card_back": 0.9999819993972778,
+        "bank_statement": 2.5802601157920435e-06,
+        "contract": 3.943629963032436e-06
+      }
+    },
+    {
+      "image_id": "IMG_00270",
+      "file_path": "loan_054/id_card_front.jpg",
+      "image_type": "id_card_front",
+      "pred_label": "id_card_front",
+      "confidence": 0.9999972581863403,
+      "probabilities": {
+        "face_signing": 6.803978180869308e-07,
+        "id_card_front": 0.9999972581863403,
+        "id_card_back": 1.934183046614635e-06,
+        "bank_statement": 1.4922943591955118e-07,
+        "contract": 1.215464529025212e-08
+      }
+    },
+    {
+      "image_id": "IMG_00316",
+      "file_path": "loan_064/bank_statement.jpg",
+      "image_type": "bank_statement",
+      "pred_label": "bank_statement",
+      "confidence": 0.9999980926513672,
+      "probabilities": {
+        "face_signing": 8.125979888973234e-07,
+        "id_card_front": 2.4186522296076873e-07,
+        "id_card_back": 6.361480018313159e-07,
+        "bank_statement": 0.9999980926513672,
+        "contract": 1.6492940346779505e-07
+      }
+    },
+    {
+      "image_id": "IMG_00317",
+      "file_path": "loan_064/contract.jpg",
+      "image_type": "contract",
+      "pred_label": "contract",
+      "confidence": 0.9999603033065796,
+      "probabilities": {
+        "face_signing": 2.208215050814033e-07,
+        "id_card_front": 1.375386489144148e-07,
+        "id_card_back": 3.739946805580985e-07,
+        "bank_statement": 3.896387715940364e-05,
+        "contract": 0.9999603033065796
+      }
+    },
+    {
+      "image_id": "IMG_00318",
+      "file_path": "loan_064/face_signing.jpg",
+      "image_type": "face_signing",
+      "pred_label": "face_signing",
+      "confidence": 1.0,
+      "probabilities": {
+        "face_signing": 1.0,
+        "id_card_front": 4.6461792746477215e-11,
+        "id_card_back": 1.4061410022470078e-11,
+        "bank_statement": 4.891783506044689e-11,
+        "contract": 8.888508679083529e-11
+      }
+    },
+    {
+      "image_id": "IMG_00319",
+      "file_path": "loan_064/id_card_back.jpg",
+      "image_type": "id_card_back",
+      "pred_label": "id_card_back",
+      "confidence": 0.9999842643737793,
+      "probabilities": {
+        "face_signing": 7.552657166343124e-08,
+        "id_card_front": 9.558469173498452e-06,
+        "id_card_back": 0.9999842643737793,
+        "bank_statement": 2.308263674422051e-06,
+        "contract": 3.7601016629196238e-06
+      }
+    },
+    {
+      "image_id": "IMG_00320",
+      "file_path": "loan_064/id_card_front.jpg",
+      "image_type": "id_card_front",
+      "pred_label": "id_card_front",
+      "confidence": 0.9999978542327881,
+      "probabilities": {
+        "face_signing": 5.517210297512065e-07,
+        "id_card_front": 0.9999978542327881,
+        "id_card_back": 1.4614141718993778e-06,
+        "bank_statement": 1.2160978712927317e-07,
+        "contract": 6.796835538835921e-09
+      }
+    },
+    {
+      "image_id": "IMG_00321",
+      "file_path": "loan_065/bank_statement.jpg",
+      "image_type": "bank_statement",
+      "pred_label": "bank_statement",
+      "confidence": 0.9999978542327881,
+      "probabilities": {
+        "face_signing": 8.297453746308747e-07,
+        "id_card_front": 2.3886525468697073e-07,
+        "id_card_back": 9.735460935189622e-07,
+        "bank_statement": 0.9999978542327881,
+        "contract": 1.3191606740292627e-07
+      }
+    },
+    {
+      "image_id": "IMG_00322",
+      "file_path": "loan_065/contract.jpg",
+      "image_type": "contract",
+      "pred_label": "contract",
+      "confidence": 0.9999614953994751,
+      "probabilities": {
+        "face_signing": 2.3008368543742108e-07,
+        "id_card_front": 1.499876844945902e-07,
+        "id_card_back": 3.8296752791211475e-07,
+        "bank_statement": 3.772557101910934e-05,
+        "contract": 0.9999614953994751
+      }
+    },
+    {
+      "image_id": "IMG_00323",
+      "file_path": "loan_065/face_signing.jpg",
+      "image_type": "face_signing",
+      "pred_label": "face_signing",
+      "confidence": 1.0,
+      "probabilities": {
+        "face_signing": 1.0,
+        "id_card_front": 6.378737121837119e-11,
+        "id_card_back": 1.8896231801512897e-11,
+        "bank_statement": 1.768266782997685e-11,
+        "contract": 3.1454717303036617e-11
+      }
+    },
+    {
+      "image_id": "IMG_00324",
+      "file_path": "loan_065/id_card_back.jpg",
+      "image_type": "id_card_back",
+      "pred_label": "id_card_back",
+      "confidence": 0.9999830722808838,
+      "probabilities": {
+        "face_signing": 8.221152114629149e-08,
+        "id_card_front": 1.097589574783342e-05,
+        "id_card_back": 0.9999830722808838,
+        "bank_statement": 2.422962097625714e-06,
+        "contract": 3.485968591121491e-06
+      }
+    },
+    {
+      "image_id": "IMG_00325",
+      "file_path": "loan_065/id_card_front.jpg",
+      "image_type": "id_card_front",
+      "pred_label": "id_card_front",
+      "confidence": 0.9999871253967285,
+      "probabilities": {
+        "face_signing": 2.0981453872082056e-06,
+        "id_card_front": 0.9999871253967285,
+        "id_card_back": 9.848804438661318e-06,
+        "bank_statement": 6.971606012484699e-07,
+        "contract": 1.5763367855470278e-07
+      }
+    }
+  ]
+}

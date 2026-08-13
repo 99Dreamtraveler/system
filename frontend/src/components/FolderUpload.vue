@@ -183,7 +183,8 @@ const handleUpload = async () => {
       })
     }, 500)
   } catch (e) {
-    ElMessage.error('上传失败：' + (e.message || '未知错误'))
+    const serverMessage = e.response?.data?.message
+    ElMessage.error(serverMessage || ('上传失败：' + (e.message || '未知错误')))
     uploadProgress.value = 0
   } finally {
     uploading.value = false

@@ -62,6 +62,9 @@ export const runSimilarity = (sessionId, faceImages, threshold) =>
     threshold: threshold || 0.90,
   })
 
+export const startDetectionTask = (taskId) => api.post(`/history/tasks/${encodeURIComponent(taskId)}/start`)
+export const getDetectionTaskStatus = (taskId) => api.get(`/history/tasks/${encodeURIComponent(taskId)}/status`)
+
 // 新增: folder_path 模式直接检测
 export const runSimilarityByFolder = (folderPath, threshold) =>
   api.post('/similarity/detect', {
@@ -83,5 +86,22 @@ export const healthCheck = () => api.get('/health')
 // 获取文件URL
 export const getFileUrl = (sessionId, filePath) =>
   `/api/file/${sessionId}/${filePath}`
+
+// 贷款记录管理
+export const scanRecords = (sessionId) =>
+  api.get(`/scan/${sessionId}`)
+
+export const createRecord = (sessionId, formData) =>
+  api.post(`/records/${sessionId}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+
+export const deleteRecord = (sessionId, loanId) =>
+  api.delete(`/records/${sessionId}/${loanId}`)
+
+export const uploadRecordField = (sessionId, loanId, field, formData) =>
+  api.post(`/records/${sessionId}/${loanId}/${field}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
 
 export default api

@@ -1,0 +1,159 @@
+{
+  "metadata": {
+    "total_images": 55,
+    "face_signing_detected": 11,
+    "model": "C:\\Users\\27383\\Desktop\\23-多模态技术与数据治理赛道-无锡农商行-基于多模态大模型的金融影像智能相似度检测模型\\23_Finance_clarity\\output\\yolo_cls_runs\\finance_5cls\\weights\\best.pt",
+    "metrics": {
+      "overall": {
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "per_class": {
+        "face_signing": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "id_card_front": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "id_card_back": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "bank_statement": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        },
+        "contract": {
+          "accuracy": 1.0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0
+        }
+      }
+    }
+  },
+  "face_signing_images": [
+    {
+      "image_id": "IMG_00053",
+      "file_path": "loan_011/face_signing.jpg",
+      "image_type": "face_signing",
+      "business_type": "消费贷",
+      "loan_id": "LN2024000011",
+      "similar_group": "SG_003",
+      "is_similar_pair": 1,
+      "confidence": 0.9999998807907104
+    },
+    {
+      "image_id": "IMG_00068",
+      "file_path": "loan_014/face_signing.jpg",
+      "image_type": "face_signing",
+      "business_type": "商户易贷",
+      "loan_id": "LN2024000014",
+      "similar_group": "",
+      "is_similar_pair": 0,
+      "confidence": 1.0
+    },
+    {
+      "image_id": "IMG_00098",
+      "file_path": "loan_020/face_signing.jpg",
+      "image_type": "face_signing",
+      "business_type": "商户易贷",
+      "loan_id": "LN2024000020",
+      "similar_group": "",
+      "is_similar_pair": 0,
+      "confidence": 1.0
+    },
+    {
+      "image_id": "IMG_00108",
+      "file_path": "loan_022/face_signing.jpg",
+      "image_type": "face_signing",
+      "business_type": "消费贷",
+      "loan_id": "LN2024000022",
+      "similar_group": "",
+      "is_similar_pair": 0,
+      "confidence": 1.0
+    },
+    {
+      "image_id": "IMG_00133",
+      "file_path": "loan_027/face_signing.jpg",
+      "image_type": "face_signing",
+      "business_type": "消费贷",
+      "loan_id": "LN2024000027",
+      "similar_group": "",
+      "is_similar_pair": 0,
+      "confidence": 1.0
+    },
+    {
+      "image_id": "IMG_00138",
+      "file_path": "loan_028/face_signing.jpg",
+      "image_type": "face_signing",
+      "business_type": "消费贷",
+      "loan_id": "LN2024000028",
+      "similar_group": "SG_010",
+      "is_similar_pair": 1,
+      "confidence": 1.0
+    },
+    {
+      "image_id": "IMG_00233",
+      "file_path": "loan_047/face_signing.jpg",
+      "image_type": "face_signing",
+      "business_type": "锡微贷",
+      "loan_id": "LN2024000047",
+      "similar_group": "",
+      "is_similar_pair": 0,
+      "confidence": 0.9999995231628418
+    },
+    {
+      "image_id": "IMG_00263",
+      "file_path": "loan_053/face_signing.jpg",
+      "image_type": "face_signing",
+      "business_type": "商户易贷",
+      "loan_id": "LN2024000053",
+      "similar_group": "SG_003",
+      "is_similar_pair": 1,
+      "confidence": 1.0
+    },
+    {
+      "image_id": "IMG_00268",
+      "file_path": "loan_054/face_signing.jpg",
+      "image_type": "face_signing",
+      "business_type": "消费贷",
+      "loan_id": "LN2024000054",
+      "similar_group": "SG_003",
+      "is_similar_pair": 1,
+      "confidence": 1.0
+    },
+    {
+      "image_id": "IMG_00318",
+      "file_path": "loan_064/face_signing.jpg",
+      "image_type": "face_signing",
+      "business_type": "锡微贷",
+      "loan_id": "LN2024000064",
+      "similar_group": "SG_010",
+      "is_similar_pair": 1,
+      "confidence": 1.0
+    },
+    {
+      "image_id": "IMG_00323",
+      "file_path": "loan_065/face_signing.jpg",
+      "image_type": "face_signing",
+      "business_type": "消费贷",
+      "loan_id": "LN2024000065",
+      "similar_group": "SG_010",
+      "is_similar_pair": 1,
+      "confidence": 1.0
+    }
+  ]
+}

@@ -1,0 +1,427 @@
+"""Shared utilities for YOLO 5-class financial image classification."""
+import io
+import json
+import os
+import random
+import shutil
+import sys
+import tempfile
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import torch
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+)
+from tqdm import tqdm
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+
+BASE_DIR = Path(__file__).parent
+DATASET_DIR = BASE_DIR / "数据集1"
+ANNOTATIONS_PATH = DATASET_DIR / "annotations.csv"
+OUTPUT_DIR = BASE_DIR / "output"
+YOLO_DATASET_DIR = OUTPUT_DIR / "yolo_cls_dataset"
+PROJECT_RUNS_DIR = OUTPUT_DIR / "yolo_cls_runs"
+RUNS_DIR = Path(tempfile.gettempdir()) / "finance_yolo_runs"
+ULTRALYTICS_CONFIG_DIR = OUTPUT_DIR / "ultralytics_config"
+
+OUTPUT_DIR.mkdir(exist_ok=True)
+ULTRALYTICS_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+os.environ["YOLO_CONFIG_DIR"] = str(ULTRALYTICS_CONFIG_DIR)
+
+from ultralytics import YOLO
+
+PRETRAINED_CLS_MODEL = BASE_DIR / "yolo26n-cls.pt"
+FALLBACK_CLS_MODEL = "yolo26n-cls.pt"
+TRAINED_MODEL_PATH = PROJECT_RUNS_DIR / "finance_5cls" / "weights" / "best.pt"
+TEMP_TRAINED_MODEL_PATH = RUNS_DIR / "finance_5cls" / "weights" / "best.pt"
+SPLIT_CSV_PATH = OUTPUT_DIR / "dataset_split.csv"
+
+EN_LABELS = ["face_signing", "id_card_front", "id_card_back", "bank_statement", "contract"]
+EN_TO_CN = {
+    "face_signing": "面签合影照片",
+    "id_card_front": "身份证正面",
+    "id_card_back": "身份证背面",
+    "bank_statement": "银行流水",
+    "contract": "合同文档",
+}
+
+BATCH_SIZE = 16
+EPOCHS = 50
+IMG_SIZE = 224
+TRAIN_RATIO = 0.70
+VAL_RATIO = 0.15
+TEST_RATIO = 0.15
+EVAL_SPLIT = "test"
+SEED = 42
+DEVICE = 0 if torch.cuda.is_available() else "cpu"
+RESOLVED_MODEL_PATH = TRAINED_MODEL_PATH
+
+
+def load_data():
+    """Load annotations and keep only the five target classes."""
+    df = pd.read_csv(ANNOTATIONS_PATH, skipinitialspace=True)
+    df = df[df["image_type"].isin(EN_LABELS)].copy()
+    print(f"数据集: {len(df)} 张影像")
+    print(df["image_type"].value_counts().reindex(EN_LABELS, fill_value=0))
+    return df
+
+
+def split_by_loan_and_similarity(df):
+    """Split by loan_id, keeping similar face-signing groups in the same split."""
+    rng = random.Random(SEED)
+    loan_to_unit = {loan_id: f"loan:{loan_id}" for loan_id in df["loan_id"].unique()}
+
+    similar_rows = df[df["similar_group"].notna() & (df["similar_group"].astype(str).str.strip() != "")]
+    for similar_group, group_df in similar_rows.groupby("similar_group"):
+        unit_id = f"similar_group:{similar_group}"
+        for loan_id in group_df["loan_id"].unique():
+            loan_to_unit[loan_id] = unit_id
+
+    unit_to_loans = {}
+    for loan_id, unit_id in loan_to_unit.items():
+        unit_to_loans.setdefault(unit_id, []).append(loan_id)
+
+    units = list(unit_to_loans.items())
+    rng.shuffle(units)
+
+    n_loans = df["loan_id"].nunique()
+    target_counts = {
+        "train": int(round(n_loans * TRAIN_RATIO)),
+        "val": int(round(n_loans * VAL_RATIO)),
+    }
+    target_counts["test"] = n_loans - target_counts["train"] - target_counts["val"]
+
+    split_to_loans = {"train": [], "val": [], "test": []}
+    split_order = ["train", "val", "test"]
+
+    for _, loan_ids in units:
+        split = min(
+            split_order,
+            key=lambda name: len(split_to_loans[name]) / max(target_counts[name], 1),
+        )
+        split_to_loans[split].extend(loan_ids)
+
+    split_frames = {}
+    for split, loan_ids in split_to_loans.items():
+        split_df = df[df["loan_id"].isin(loan_ids)].copy()
+        split_df["split"] = split
+        split_frames[split] = split_df
+
+    split_df = pd.concat([split_frames[split] for split in split_order], ignore_index=True)
+    return split_df, split_frames
+
+
+def prepare_yolo_cls_dataset(df):
+    """Build an Ultralytics classification dataset and save dataset_split.csv."""
+    split_df, split_frames = split_by_loan_and_similarity(df)
+
+    if YOLO_DATASET_DIR.exists():
+        shutil.rmtree(YOLO_DATASET_DIR)
+
+    for split in ["train", "val", "test"]:
+        for label in EN_LABELS:
+            (YOLO_DATASET_DIR / split / label).mkdir(parents=True, exist_ok=True)
+
+    for split, split_part in split_frames.items():
+        for _, row in split_part.iterrows():
+            src = DATASET_DIR / row["file_path"]
+            suffix = src.suffix or ".jpg"
+            dst = YOLO_DATASET_DIR / split / row["image_type"] / f"{row['image_id']}{suffix}"
+            shutil.copy2(src, dst)
+
+    split_df.to_csv(SPLIT_CSV_PATH, index=False, encoding="utf-8-sig")
+
+    print(f"YOLO分类数据集已生成: {YOLO_DATASET_DIR}")
+    print(f"数据划分已保存: {SPLIT_CSV_PATH}")
+    print_split_summary(split_frames)
+    return YOLO_DATASET_DIR, split_frames
+
+
+def load_split_frames():
+    """Load the train/val/test split generated by the training script."""
+    if not SPLIT_CSV_PATH.exists():
+        raise FileNotFoundError(f"未找到数据划分文件，请先运行训练脚本: {SPLIT_CSV_PATH}")
+
+    split_df = pd.read_csv(SPLIT_CSV_PATH, skipinitialspace=True)
+    split_frames = {
+        split: split_df[split_df["split"] == split].copy()
+        for split in ["train", "val", "test"]
+    }
+    print(f"已加载数据划分: {SPLIT_CSV_PATH}")
+    print_split_summary(split_frames)
+    return split_frames
+
+
+def print_split_summary(split_frames):
+    """Print split counts by split and class."""
+    print("\n数据集划分统计:")
+    for split in ["train", "val", "test"]:
+        split_df = split_frames[split]
+        loan_count = split_df["loan_id"].nunique()
+        print(f"\n{split}: {len(split_df)} 张, {loan_count} 个loan_id")
+        print(split_df["image_type"].value_counts().reindex(EN_LABELS, fill_value=0))
+
+
+def train_model(data_dir):
+    """Train a YOLO classification model and return the best checkpoint model."""
+    global RESOLVED_MODEL_PATH
+    model_path = PRETRAINED_CLS_MODEL if PRETRAINED_CLS_MODEL.exists() else FALLBACK_CLS_MODEL
+    print(f"加载分类预训练模型: {model_path}")
+    print(f"设备: {DEVICE}")
+
+    model = YOLO(str(model_path))
+    try:
+        (RUNS_DIR / "finance_5cls" / "weights").mkdir(parents=True, exist_ok=True)
+        model.train(
+            data=str(data_dir),
+            task="classify",
+            epochs=EPOCHS,
+            imgsz=IMG_SIZE,
+            batch=BATCH_SIZE,
+            device=DEVICE,
+            project=str(RUNS_DIR),
+            name="finance_5cls",
+            exist_ok=True,
+        )
+    except RuntimeError as e:
+        checkpoint_path = find_trained_checkpoint()
+        if checkpoint_path is None:
+            raise
+        print(f"\n训练已生成权重，但Ultralytics收尾保存时报错: {e}")
+        print(f"继续使用已生成权重: {checkpoint_path}")
+
+    checkpoint_path = find_trained_checkpoint()
+    if checkpoint_path is None:
+        raise FileNotFoundError(f"未找到训练权重: {TRAINED_MODEL_PATH}")
+
+    checkpoint_path = sync_checkpoint_to_project(checkpoint_path)
+    RESOLVED_MODEL_PATH = checkpoint_path
+    model = YOLO(str(checkpoint_path))
+    print(f"最佳模型: {checkpoint_path}")
+    return model
+
+
+def sync_checkpoint_to_project(checkpoint_path):
+    """Copy the latest temporary checkpoint back to the project output directory."""
+    project_weights_dir = TRAINED_MODEL_PATH.parent
+    project_weights_dir.mkdir(parents=True, exist_ok=True)
+
+    if checkpoint_path.resolve() == TRAINED_MODEL_PATH.resolve():
+        return checkpoint_path
+
+    for name in ["best.pt", "last.pt"]:
+        src = checkpoint_path.parent / name
+        if src.exists():
+            shutil.copy2(src, project_weights_dir / name)
+
+    return TRAINED_MODEL_PATH if TRAINED_MODEL_PATH.exists() else checkpoint_path
+
+
+def find_trained_checkpoint():
+    """Find best.pt/last.pt generated by Ultralytics, preferring best.pt."""
+    candidates = [
+        TEMP_TRAINED_MODEL_PATH,
+        TEMP_TRAINED_MODEL_PATH.with_name("last.pt"),
+        TRAINED_MODEL_PATH,
+        TRAINED_MODEL_PATH.with_name("last.pt"),
+    ]
+    candidates.extend(sorted(RUNS_DIR.glob("**/weights/best.pt"), key=lambda p: p.stat().st_mtime, reverse=True))
+    candidates.extend(sorted(RUNS_DIR.glob("**/weights/last.pt"), key=lambda p: p.stat().st_mtime, reverse=True))
+    candidates.extend(sorted(PROJECT_RUNS_DIR.glob("**/weights/best.pt"), key=lambda p: p.stat().st_mtime, reverse=True))
+    candidates.extend(sorted(PROJECT_RUNS_DIR.glob("**/weights/last.pt"), key=lambda p: p.stat().st_mtime, reverse=True))
+
+    for path in candidates:
+        if path.exists():
+            return path
+    return None
+
+
+def load_trained_model():
+    """Load the trained five-class checkpoint."""
+    global RESOLVED_MODEL_PATH
+    checkpoint_path = find_trained_checkpoint()
+    if checkpoint_path is None:
+        raise FileNotFoundError(f"未找到已训练权重，请先运行训练脚本: {TRAINED_MODEL_PATH}")
+
+    checkpoint_path = sync_checkpoint_to_project(checkpoint_path)
+    RESOLVED_MODEL_PATH = checkpoint_path
+    print(f"加载已训练模型: {checkpoint_path}")
+    print(f"设备: {DEVICE}")
+    return YOLO(str(checkpoint_path))
+
+
+def classify_images(model, df):
+    """Run 5-class inference on every image listed in a dataframe."""
+    all_preds = []
+    all_probs = []
+    image_paths = [str(DATASET_DIR / p) for p in df["file_path"]]
+    model_names = model.names if isinstance(model.names, dict) else dict(enumerate(model.names))
+    name_to_idx = {name: idx for idx, name in model_names.items()}
+    missing_labels = [label for label in EN_LABELS if label not in name_to_idx]
+    if missing_labels:
+        raise ValueError(f"当前模型缺少五分类标签: {missing_labels}")
+
+    for i in tqdm(range(0, len(image_paths), BATCH_SIZE), desc="YOLO 5分类"):
+        batch_paths = image_paths[i : i + BATCH_SIZE]
+        results = model(batch_paths, verbose=False, imgsz=IMG_SIZE, device=DEVICE)
+
+        for result in results:
+            probs = result.probs.data.detach().cpu().numpy()
+            pred_id = int(probs.argmax())
+            pred_label = model_names[pred_id]
+            all_preds.append(pred_label)
+            all_probs.append([float(probs[name_to_idx[label]]) for label in EN_LABELS])
+
+    return np.array(all_preds), np.vstack(all_probs)
+
+
+def evaluate_classification(y_true, y_pred):
+    """Evaluate 5-class classification results."""
+    print("\n" + "=" * 60)
+    print("Step 1 - YOLO五分类结果")
+    print("=" * 60)
+
+    acc = accuracy_score(y_true, y_pred)
+    prec = precision_score(y_true, y_pred, average="weighted", zero_division=0)
+    rec = recall_score(y_true, y_pred, average="weighted", zero_division=0)
+    f1 = f1_score(y_true, y_pred, average="weighted", zero_division=0)
+
+    print(f"Overall Accuracy : {acc:.4f}")
+    print(f"Weighted Precision: {prec:.4f}")
+    print(f"Weighted Recall   : {rec:.4f}")
+    print(f"Weighted F1-score : {f1:.4f}")
+
+    print("\n各类别详细指标:")
+    target_names = [EN_TO_CN[label] for label in EN_LABELS]
+    print(
+        classification_report(
+            y_true,
+            y_pred,
+            labels=EN_LABELS,
+            target_names=target_names,
+            digits=4,
+            zero_division=0,
+        )
+    )
+
+    cm = confusion_matrix(y_true, y_pred, labels=EN_LABELS)
+    print("\n混淆矩阵 (行=真实, 列=预测):")
+    header = "           " + " ".join(f"{label[:8]:>9}" for label in EN_LABELS)
+    print(header)
+    for i, row in enumerate(cm):
+        print(f"{EN_LABELS[i]:>10}: " + " ".join(f"{v:>9}" for v in row))
+
+    per_class_metrics = {}
+    print("\n各类别二分类指标 (当前类别 vs 其他类别):")
+    for label in EN_LABELS:
+        class_true = (y_true == label).astype(int)
+        class_pred = (y_pred == label).astype(int)
+        class_acc = accuracy_score(class_true, class_pred)
+        class_prec = precision_score(class_true, class_pred, zero_division=0)
+        class_rec = recall_score(class_true, class_pred, zero_division=0)
+        class_f1 = f1_score(class_true, class_pred, zero_division=0)
+
+        per_class_metrics[label] = {
+            "accuracy": class_acc,
+            "precision": class_prec,
+            "recall": class_rec,
+            "f1": class_f1,
+        }
+
+        print(f"\n{label} 二分类指标:")
+        print(f"   Accuracy : {class_acc:.4f}")
+        print(f"   Precision: {class_prec:.4f}")
+        print(f"   Recall   : {class_rec:.4f}")
+        print(f"   F1-score : {class_f1:.4f}")
+
+    return {
+        "overall": {"accuracy": acc, "precision": prec, "recall": rec, "f1": f1},
+        "per_class": per_class_metrics,
+    }
+
+
+def print_accuracy_summary(y_true, y_pred, split_name):
+    """Print a concise accuracy line for a split."""
+    acc = accuracy_score(y_true, y_pred)
+    print(f"\n{split_name} Accuracy : {acc:.4f}")
+    return acc
+
+
+def save_results(df, y_pred, y_probs, metrics, output_prefix="test"):
+    """Save full 5-class predictions and the face_signing subset."""
+    df = df.copy()
+    df["pred_label"] = y_pred
+
+    for idx, label in enumerate(EN_LABELS):
+        df[f"prob_{label}"] = y_probs[:, idx]
+
+    face_signing_df = df[df["pred_label"] == "face_signing"].copy()
+
+    predictions = []
+    for _, row in df.iterrows():
+        predictions.append(
+            {
+                "image_id": row["image_id"],
+                "file_path": row["file_path"],
+                "image_type": row["image_type"],
+                "split": row["split"] if "split" in row else "",
+                "pred_label": row["pred_label"],
+                "confidence": float(row[f"prob_{row['pred_label']}"]),
+                "probabilities": {label: float(row[f"prob_{label}"]) for label in EN_LABELS},
+            }
+        )
+
+    full_json = {
+        "metadata": {
+            "total_images": len(df),
+            "model": str(RESOLVED_MODEL_PATH),
+            "labels": EN_LABELS,
+            "metrics": metrics,
+        },
+        "predictions": predictions,
+    }
+
+    full_json_path = OUTPUT_DIR / f"yolo_5class_predictions_{output_prefix}.json"
+    with open(full_json_path, "w", encoding="utf-8") as f:
+        json.dump(full_json, f, indent=2, ensure_ascii=False)
+
+    face_json = {
+        "metadata": {
+            "total_images": len(df),
+            "face_signing_detected": len(face_signing_df),
+            "model": str(RESOLVED_MODEL_PATH),
+            "metrics": metrics,
+        },
+        "face_signing_images": [],
+    }
+
+    for _, row in face_signing_df.iterrows():
+        face_json["face_signing_images"].append(
+            {
+                "image_id": row["image_id"],
+                "file_path": row["file_path"],
+                "image_type": row["image_type"],
+                "business_type": row["business_type"],
+                "loan_id": row["loan_id"],
+                "similar_group": row["similar_group"] if pd.notna(row["similar_group"]) else "",
+                "is_similar_pair": int(row["is_similar_pair"]),
+                "confidence": float(row["prob_face_signing"]),
+            }
+        )
+
+    face_json_path = OUTPUT_DIR / f"face_signing_images_{output_prefix}.json"
+    with open(face_json_path, "w", encoding="utf-8") as f:
+        json.dump(face_json, f, indent=2, ensure_ascii=False)
+
+    print(f"\n五分类预测已保存: {full_json_path}")
+    print(f"面签筛选结果已保存: {face_json_path}")
+    print(f"筛选出面签照片: {len(face_signing_df)} 张")
+    return full_json_path, face_json_path
