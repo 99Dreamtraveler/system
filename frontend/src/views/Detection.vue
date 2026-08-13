@@ -34,7 +34,7 @@
 
     <section v-if="taskSummary" class="result-summary-grid">
       <el-card class="summary-card" shadow="never"><template #header><div class="section-title"><el-icon><DocumentChecked /></el-icon><span>任务概要</span></div></template><dl><div><dt>检测任务ID</dt><dd>{{ taskSummary.taskId }}</dd></div><div><dt>检测时间</dt><dd>{{ taskSummary.detectedAt }}</dd></div><div><dt>检测耗时</dt><dd>{{ taskSummary.duration }}</dd></div></dl></el-card>
-      <el-card class="summary-card" shadow="never"><template #header><div class="section-title"><el-icon><DataAnalysis /></el-icon><span>相似度检测统计</span></div></template><div class="similarity-stat"><strong>{{ similaritySummary.maxSimilarity === null ? '--' : `${(similaritySummary.maxSimilarity * 100).toFixed(2)}%` }}</strong><span>最高相似度</span><p>发现 {{ similaritySummary.groupCount }} 个相似组</p></div></el-card>
+      <el-card class="summary-card" shadow="never"><template #header><div class="section-title"><el-icon><DataAnalysis /></el-icon><span>相似度检测统计</span></div></template><div class="similarity-stat"><strong>{{ formatSimilarity(similaritySummary.maxSimilarity, similaritySummary.isPercent) }}</strong><span>最高相似度</span><p>发现 {{ similaritySummary.groupCount }} 个相似组</p></div></el-card>
       <el-card class="summary-card" shadow="never"><template #header><div class="section-title"><el-icon><WarningFilled /></el-icon><span>风险统计</span></div></template><div class="risk-stats"><div><strong>{{ riskCounts.high }}</strong><span>高风险</span></div><div><strong>{{ riskCounts.medium }}</strong><span>中风险</span></div><div><strong>{{ riskCounts.low }}</strong><span>低风险</span></div></div></el-card>
     </section>
 
@@ -90,6 +90,7 @@ const activeProcessStep = ref(-1)
 const failedStep = ref(null)
 const taskSummary = ref(null)
 const similarityResult = ref(null)
+const completedTaskStats = ref(null)
 const startedAt = ref(null)
 const classificationCompleted = ref(false)
 const historicalPhotos = ref([])
@@ -105,11 +106,19 @@ const classificationSummary = computed(() => Object.keys(labelNames).map((key) =
 const processSteps = [{ label: '文件夹解析' }, { label: '贷款记录扫描' }, { label: '面签照筛选(YOLO)' }, { label: '特征提取' }, { label: '相似度计算' }, { label: '检测完成' }]
 const showProcess = computed(() => uploadInfo.value !== null)
 const similaritySummary = computed(() => {
+  if (completedTaskStats.value) {
+    return {
+      groupCount: completedTaskStats.value.similarityGroups || 0,
+      maxSimilarity: completedTaskStats.value.maxSimilarity ?? null,
+      isPercent: true,
+    }
+  }
   const groups = similarityResult.value?.similar_groups || []
   const values = groups.map((group) => group.avg_similarity).filter((value) => typeof value === 'number')
-  return { groupCount: groups.length, maxSimilarity: values.length ? Math.max(...values) : null }
+  return { groupCount: groups.length, maxSimilarity: values.length ? Math.max(...values) : null, isPercent: false }
 })
 const riskCounts = computed(() => {
+  if (completedTaskStats.value) return completedTaskStats.value.riskCounts
   const groups = similarityResult.value?.similar_groups || []
   return groups.reduce((counts, group) => { const level = group.avg_similarity > .9 ? 'high' : group.avg_similarity > .8 ? 'medium' : 'low'; counts[level] += 1; return counts }, { high: 0, medium: 0, low: 0 })
 })
@@ -117,10 +126,14 @@ const processClass = (index) => ({ done: failedStep.value === null && index < ac
 const processStatus = (index) => index === failedStep.value ? '检测失败' : index < activeProcessStep.value ? '已完成' : index === activeProcessStep.value ? '进行中' : '等待'
 const processTagType = (index) => index === failedStep.value ? 'danger' : index < activeProcessStep.value ? 'success' : index === activeProcessStep.value ? 'primary' : 'info'
 const getImageUrl = (filePath) => getFileUrl(sessionId.value, filePath)
+const formatSimilarity = (value, isPercent = false) => {
+  if (typeof value !== 'number') return '--'
+  return `${(isPercent ? value : value * 100).toFixed(2)}%`
+}
 const formatConfidence = (value) => `${((Number(value) || 0) * 100).toFixed(1)}%`
 const onUploadSuccess = (data) => { sessionId.value = data.session_id; uploadInfo.value = { folderName: data.folder_name || '已上传影像文件夹', totalFiles: data.total_files ?? data.selected_file_count ?? 0 }; activeProcessStep.value = 1 }
 const startDetection = async () => {
-  clearSimilarityTimer(); failedStep.value = null; taskSummary.value = null; similarityResult.value = null; processing.value = true; startedAt.value = Date.now(); activeProcessStep.value = 1; currentStep.value = 1
+  clearSimilarityTimer(); failedStep.value = null; taskSummary.value = null; similarityResult.value = null; completedTaskStats.value = null; processing.value = true; startedAt.value = Date.now(); activeProcessStep.value = 1; currentStep.value = 1
   localStorage.setItem('active_detection_task', JSON.stringify({ taskId: sessionId.value, startedAt: startedAt.value }))
   try { await startDetectionTask(sessionId.value); startTaskPolling() } catch { onDetectionFailed() }
 }
@@ -133,13 +146,23 @@ const stopTaskPolling = () => { if (taskPollTimer) { clearInterval(taskPollTimer
 const applyTaskStatus = (data) => {
   activeProcessStep.value = data.status === '已完成' ? 6 : data.progress >= 70 ? 4 : data.progress >= 45 ? 3 : 1
   currentStep.value = data.status === '已完成' ? 3 : data.progress >= 45 ? 2 : 1
+  const allImages = data.result?.classification?.all_images
+  if (Array.isArray(allImages)) {
+    classifiedImages.value = allImages
+    faceImages.value = allImages.filter((image) => image.pred_label === 'face_signing')
+    classificationCompleted.value = true
+  }
   if (data.status === '检测中') { processing.value = true; return }
   if (data.status === '检测失败') { processing.value = false; failedStep.value = activeProcessStep.value; stopTaskPolling(); return }
   if (data.status === '已完成') {
     stopTaskPolling()
     processing.value = false
-    classifiedImages.value = data.result?.classification?.all_images || []
     similarityResult.value = { suspicious_pairs: data.result?.suspicious_pairs || [], similar_groups: [] }
+    completedTaskStats.value = {
+      similarityGroups: data.result?.similarityStats?.similarGroups || 0,
+      maxSimilarity: data.result?.similarityStats?.maxSimilarity ?? null,
+      riskCounts: data.result?.riskStats || { high: 0, medium: 0, low: 0 },
+    }
     taskSummary.value = { taskId: data.taskId, detectedAt: data.result?.detectedAt || '--', duration: data.result?.duration || '--' }
     localStorage.removeItem('active_detection_task')
     localStorage.removeItem('recent_detection_task')
@@ -148,7 +171,7 @@ const applyTaskStatus = (data) => {
 const pollTaskStatus = async () => { try { const res = await getDetectionTaskStatus(sessionId.value); applyTaskStatus(res.data) } catch {} }
 const startTaskPolling = () => { stopTaskPolling(); pollTaskStatus(); taskPollTimer = window.setInterval(pollTaskStatus, 1800) }
 const loadHistoricalPhotos = async () => { historyLoading.value = true; try { const res = await getHistoricalInterviewPhotos({ page: 1, pageSize: 4 }); historicalPhotos.value = res.data.records || [] } catch { historicalPhotos.value = [] } finally { historyLoading.value = false } }
-const resetTask = () => { clearSimilarityTimer(); stopTaskPolling(); localStorage.removeItem('active_detection_task'); localStorage.removeItem('recent_detection_task'); currentStep.value = 0; sessionId.value = ''; faceImages.value = []; classifiedImages.value = []; uploadInfo.value = null; processing.value = false; activeProcessStep.value = -1; failedStep.value = null; taskSummary.value = null; similarityResult.value = null; classificationCompleted.value = false }
+const resetTask = () => { clearSimilarityTimer(); stopTaskPolling(); localStorage.removeItem('active_detection_task'); localStorage.removeItem('recent_detection_task'); currentStep.value = 0; sessionId.value = ''; faceImages.value = []; classifiedImages.value = []; uploadInfo.value = null; processing.value = false; activeProcessStep.value = -1; failedStep.value = null; taskSummary.value = null; similarityResult.value = null; completedTaskStats.value = null; classificationCompleted.value = false }
 onMounted(async () => { await loadHistoricalPhotos(); localStorage.removeItem('recent_detection_task'); const active = JSON.parse(localStorage.getItem('active_detection_task') || 'null'); if (active?.taskId) { sessionId.value = active.taskId; uploadInfo.value = { folderName: active.taskId, totalFiles: 0 }; currentStep.value = 1; processing.value = true; startTaskPolling() } })
 onBeforeUnmount(() => { clearSimilarityTimer(); stopTaskPolling() })
 </script>

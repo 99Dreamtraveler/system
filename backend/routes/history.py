@@ -29,7 +29,10 @@ def task_status(task_id):
     task = get_task(task_id)
     if not task:
         return jsonify({"code": 404, "message": "检测任务不存在"}), 404
-    return jsonify({"code": 200, "data": {"taskId": task_id, "status": task["status"], "progress": task.get("progress", 0), "currentStep": task.get("currentStep"), "message": task.get("errorMessage") or "", "result": task if task["status"] in {"已完成", "检测失败"} else None}})
+    # Classification is persisted before similarity detection starts.  Returning
+    # the task here lets the client display the screened face-signing count while
+    # the similarity phase is still running.
+    return jsonify({"code": 200, "data": {"taskId": task_id, "status": task["status"], "progress": task.get("progress", 0), "currentStep": task.get("currentStep"), "message": task.get("errorMessage") or "", "result": task}})
 
 @history_bp.route("/api/risk/cases", methods=["GET"])
 def cases():
