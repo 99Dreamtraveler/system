@@ -29,7 +29,7 @@
 
           <div class="hero-content">
 
-            <p class="hero-desc">基于多模态大模型的金融影像智能分析平台，提供面签照筛选、相似度检测、可疑交易预警等核心能力</p>
+            <p class="hero-desc">金融影像智能检测，助力风险识别与预警</p>
 
             <!-- 特性卡片 -->
             <div class="feature-cards">

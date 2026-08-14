@@ -9,7 +9,7 @@ from config import (
     get_upload_session_dir,
     validate_task_folder_name,
 )
-from services.repository import create_task, task_exists
+from services.repository import create_task
 from services.repository import create_operation_log
 from routes.auth import current_username
 
@@ -50,13 +50,11 @@ def upload_folder():
         valid, message = validate_task_folder_name(folder_name)
         if not valid:
             return jsonify({"code": 400, "message": message}), 400
-        session_id = folder_name
+        # The display name is not a storage or task identifier.  A unique ID
+        # lets users upload the same source folder again without overwriting a
+        # previous task or its files.
+        session_id = uuid.uuid4().hex
         session_dir = TASK_UPLOAD_FOLDER / session_id
-        if session_dir.exists() or task_exists(session_id):
-            return jsonify({
-                "code": 409,
-                "message": f"任务名称“{session_id}”已存在，请更换上传文件夹名称",
-            }), 409
     else:
         # Compatibility for existing callers that only supply files/session headers.
         session_id = request.headers.get("X-Session-Id", str(uuid.uuid4()))
@@ -74,8 +72,8 @@ def upload_folder():
     if not files:
         return jsonify({"code": 400, "message": "未选择文件"}), 400
 
-    # Legacy uploads preserve the prior overwrite behavior. Named tasks passed the
-    # directory and database conflict checks above and are created only once.
+    # Legacy uploads preserve the prior overwrite behavior. Named uploads use a
+    # newly generated directory and therefore never overwrite prior tasks.
     if not is_named_task and session_dir.exists():
         shutil.rmtree(session_dir)
     session_dir.mkdir(parents=True, exist_ok=True)
@@ -129,6 +127,7 @@ def upload_folder():
         "message": "上传成功",
         "data": {
             "session_id": session_id,
+            "folder_name": folder_name or session_id,
             "total_files": len(saved_files),
             "subdirs": sorted(subdirs),
             "image_count": len(image_files),

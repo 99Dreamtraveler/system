@@ -259,7 +259,7 @@ def analytics(start_date, end_date):
     start_day = date.fromisoformat(start_date)
     end_day = date.fromisoformat(end_date)
     with _connection() as conn:
-        tasks = conn.execute("SELECT * FROM detection_tasks WHERE created_at >= ? AND created_at <= ? ORDER BY created_at", (f"{start_date} 00:00:00", f"{end_date} 23:59:59")).fetchall()
+        tasks = conn.execute("SELECT * FROM detection_tasks WHERE created_at >= ? AND created_at <= ? ORDER BY created_at DESC, task_id DESC", (f"{start_date} 00:00:00", f"{end_date} 23:59:59")).fetchall()
         cases = conn.execute("""SELECT risk_cases.*, detection_tasks.created_at AS task_created_at
           FROM risk_cases JOIN detection_tasks ON detection_tasks.task_id = risk_cases.task_id
           WHERE detection_tasks.created_at >= ? AND detection_tasks.created_at <= ?""", (f"{start_date} 00:00:00", f"{end_date} 23:59:59")).fetchall()

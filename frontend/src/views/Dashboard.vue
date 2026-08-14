@@ -43,8 +43,8 @@
         <el-table :data="recentTasks" size="small" class="tasks-table" :header-cell-style="tableHeaderStyle">
           <el-table-column prop="id" label="任务编号" min-width="165"/>
           <el-table-column prop="detectedAt" label="检测时间" min-width="150"/>
-          <el-table-column label="风险等级" min-width="105"><template #default="{ row }"><el-tag :type="riskTagType(row.riskLevel)" size="small">{{ riskLabel(row.riskLevel) }}</el-tag></template></el-table-column>
-          <el-table-column label="状态" min-width="95"><template #default="{ row }"><el-tag type="success" effect="plain" size="small">{{ statusLabel(row.status) }}</el-tag></template></el-table-column>
+          <el-table-column label="风险等级" min-width="105"><template #default="{ row }"><el-tag :type="riskTagType(row.riskLevel)" size="small">{{ row.riskLevel }}</el-tag></template></el-table-column>
+          <el-table-column label="状态" min-width="95"><template #default="{ row }"><el-tag :type="statusTagType(row.status)" effect="plain" size="small">{{ row.status }}</el-tag></template></el-table-column>
           <el-table-column label="操作" width="90" fixed="right"><template #default="{ row }"><el-button link type="primary" size="small" @click="openTask(row.id)">查看详情</el-button></template></el-table-column>
         </el-table>
       </el-card>
@@ -59,16 +59,17 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { Picture, UserFilled, WarningFilled, CircleCloseFilled, Calendar, Finished, CircleCheckFilled } from '@element-plus/icons-vue'
 import { getAnalyticsStatistics } from '../api/analytics'
 
 const router = useRouter()
 const statistics = ref({ detectionTrend: [], riskDistribution: { high: 0, medium: 0, low: 0 }, tasks: [], cases: [] })
+let statisticsTimer = null
 const detectionTrend = computed(() => statistics.value.detectionTrend.map((item) => ({ date: item.date.slice(5), detections: item.detectionCount, abnormalImages: item.abnormalCount })))
 const distribution = computed(() => statistics.value.riskDistribution)
-const recentTasks = computed(() => statistics.value.tasks.slice(0, 5).map((task) => ({ id: task.taskId, detectedAt: task.detectedAt || task.createdAt, riskLevel: ({ 待检测: 'pending', 高风险: 'high', 中风险: 'medium', 低风险: 'low' })[task.riskLevel], status: ({ 待检测: 'pending', 已完成: 'completed', 检测中: 'running', 检测失败: 'failed' })[task.status] })))
+const recentTasks = computed(() => statistics.value.tasks.slice(0, 5).map((task) => ({ id: task.taskId, detectedAt: task.detectedAt || task.createdAt, riskLevel: task.riskLevel, status: task.status })))
 const highRiskCases = computed(() => statistics.value.cases.filter((item) => item.riskLevel === '高风险').slice(0, 5).map((item) => ({ id: item.caseId, similarity: item.similarity / 100, foundAt: item.discoveredAt, status: item.status })))
 const metrics = computed(() => ({ totalImages: statistics.value.detectionTrend.reduce((sum, item) => sum + item.detectionCount, 0), affectedCount: statistics.value.tasks.reduce((sum, item) => sum + (item.interviewImages || 0), 0), abnormalImages: statistics.value.detectionTrend.reduce((sum, item) => sum + item.abnormalCount, 0), highRiskCases: distribution.value.high, todayTasks: statistics.value.tasks.filter((item) => item.createdAt?.startsWith(new Date().toISOString().slice(0, 10))).length, completedTasks: statistics.value.tasks.filter((item) => item.status === '已完成').length }))
 const chartWidth = 650
@@ -107,12 +108,20 @@ const metricCards = computed(() => [
 ])
 const tableHeaderStyle = { background: 'var(--bg-card-hover)', color: 'var(--text-secondary)', fontWeight: '600' }
 const formatNumber = (value) => new Intl.NumberFormat('zh-CN').format(value)
-const riskTagType = (level) => ({ pending: 'info', high: 'danger', medium: 'warning', low: 'success' }[level])
-const riskLabel = (level) => ({ pending: '待检测', high: '高风险', medium: '中风险', low: '低风险' }[level])
-const statusLabel = (status) => ({ completed: '已完成', running: '进行中', pending: '待执行' }[status])
+const riskTagType = (level) => ({ 待检测: 'info', 高风险: 'danger', 中风险: 'warning', 低风险: 'success' }[level] || 'info')
+const statusTagType = (status) => ({ 待检测: 'info', 检测中: 'primary', 已完成: 'success', 检测失败: 'danger' }[status] || 'info')
 const openTask = (id) => router.push({ path: '/tasks', query: { taskId: id } })
 const openCase = (id) => router.push({ path: '/risk-cases', query: { caseId: id } })
-onMounted(async () => { const res = await getAnalyticsStatistics('7d'); statistics.value = res.data })
+const refreshStatistics = async () => {
+  try {
+    const res = await getAnalyticsStatistics('7d')
+    statistics.value = res.data
+  } catch {
+    // Keep the last successful snapshot visible while the next poll retries.
+  }
+}
+onMounted(() => { refreshStatistics(); statisticsTimer = window.setInterval(refreshStatistics, 5000) })
+onBeforeUnmount(() => { if (statisticsTimer) clearInterval(statisticsTimer) })
 </script>
 
 <style scoped>
