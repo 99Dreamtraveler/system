@@ -19,7 +19,6 @@
           <h1 class="brand-title">金融影像智能相似度检测系统</h1>
         </div>
         <div class="top-bar-right">
-          <el-button v-if="activeTask" class="task-status" :type="activeTask.status === '检测失败' ? 'danger' : activeTask.status === '已完成' ? 'success' : 'warning'" plain size="small" @click="openActiveTask">{{ activeTask.status === '检测中' ? `${activeTask.taskId} · ${activeTask.currentStep || '检测中'}` : `${activeTask.taskId} · ${activeTask.status}` }}</el-button>
           <el-button class="theme-toggle" circle :icon="isDark ? Sunny : Moon" size="default" @click="toggleTheme"/>
           <el-tag type="info" effect="plain" size="large"><el-icon><User /></el-icon>{{ username }}</el-tag>
           <el-button type="danger" size="small" @click="handleLogout"><el-icon><SwitchButton /></el-icon>退出登录</el-button>
@@ -31,28 +30,22 @@
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Lock, House, Search, FolderOpened, WarningFilled, DataAnalysis, Setting, User, SwitchButton, Sunny, Moon } from '@element-plus/icons-vue'
-import { getDetectionTaskStatus } from '../api'
+import { Lock, House, Search, FolderOpened, WarningFilled, Setting, User, SwitchButton, Sunny, Moon } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const isDark = ref(false)
-const activeTask = ref(null)
-let activeTaskTimer = null
 const menuItems = [
   { path: '/dashboard', label: '首页', icon: House }, { path: '/detection', label: '智能影像检测', icon: Search },
   { path: '/tasks', label: '检测任务', icon: FolderOpened }, { path: '/cases', label: '风险案件', icon: WarningFilled },
-  { path: '/analytics', label: '数据分析', icon: DataAnalysis }, { path: '/settings', label: '系统管理', icon: Setting },
+  { path: '/settings', label: '系统管理', icon: Setting },
 ]
 const username = computed(() => JSON.parse(localStorage.getItem('user') || '{}').username || 'anonymous')
 const toggleTheme = () => { isDark.value = !isDark.value; const theme = isDark.value ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', isDark.value ? 'dark' : ''); document.querySelector('meta[name="theme-color"]')?.setAttribute('content', isDark.value ? '#1e293b' : '#3b82f6'); localStorage.setItem('theme', theme) }
 const handleLogout = () => { localStorage.removeItem('user'); localStorage.removeItem('session_id'); router.push('/') }
-const refreshActiveTask = async () => { const saved = JSON.parse(localStorage.getItem('active_detection_task') || 'null'); if (!saved?.taskId) { activeTask.value = null; return } try { const res = await getDetectionTaskStatus(saved.taskId); activeTask.value = res.data; if (res.data.status === '已完成' || res.data.status === '检测失败') localStorage.removeItem('active_detection_task') } catch { activeTask.value = null } }
-const openActiveTask = () => { if (!activeTask.value) return; router.push(activeTask.value.status === '已完成' ? `/tasks/${activeTask.value.taskId}` : '/detection') }
-onMounted(() => { isDark.value = document.documentElement.getAttribute('data-theme') === 'dark'; refreshActiveTask(); activeTaskTimer = window.setInterval(refreshActiveTask, 1800) })
-onBeforeUnmount(() => { if (activeTaskTimer) clearInterval(activeTaskTimer) })
+onMounted(() => { isDark.value = document.documentElement.getAttribute('data-theme') === 'dark' })
 </script>
 
 <style scoped>

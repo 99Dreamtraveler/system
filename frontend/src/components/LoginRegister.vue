@@ -99,6 +99,11 @@ const rules = {
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 }
 
+const formatLocalDateTime = (date = new Date()) => {
+  const pad = (value) => String(value).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
+
 const handleLogin = async () => {
   if (!loginFormRef.value) return
   try {
@@ -112,7 +117,12 @@ const handleLogin = async () => {
     emit('login-success', res.data)
   } catch (e) {
     // 即使 API 失败也允许登录（兜底）
-    const user = { username: loginForm.username, token: 'local-token-' + Date.now() }
+    const user = {
+      username: loginForm.username,
+      token: 'local-token-' + Date.now(),
+      role: '业务员',
+      loginTime: formatLocalDateTime(),
+    }
     ElMessage.success('登录成功')
     emit('login-success', user)
   } finally {

@@ -11,7 +11,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from flask import Flask, send_from_directory, jsonify
 from flask_cors import CORS
-from config import FINANCE_CLASSIFIER_MODEL_PATH, SECRET_KEY, UPLOAD_FOLDER
+from config import SECRET_KEY, UPLOAD_FOLDER
 
 from routes.auth import auth_bp
 from routes.upload import upload_bp
@@ -73,7 +73,7 @@ def create_app():
             "message": "服务正常运行",
             "data": {
                 "models": {
-                    "finance_classifier": FINANCE_CLASSIFIER_MODEL_PATH.is_file(),
+                    "yolo": os.path.exists(str(Path(__file__).parent.parent / "yolo26n.pt")),
                     "clip": os.path.exists(str(Path(__file__).parent.parent / "models" / "clip-vit-large-patch14")),
                     "lora": os.path.exists(str(Path(__file__).parent.parent / "checkpoints" / "face_lora_v2_full" / "best_lora" / "adapter_model.safetensors")),
                     "projection": os.path.exists(str(Path(__file__).parent.parent / "checkpoints" / "face_lora_v2_full" / "best_projection.pt")),

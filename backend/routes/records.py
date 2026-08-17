@@ -10,6 +10,9 @@ from config import (
     LOAN_FIELD_LABELS,
     TASK_UPLOAD_FOLDER,
     validate_task_folder_name,
+    FINANCE_CLASSIFIER_MODEL_PATH,
+    FINANCE_CLASSIFIER_IMAGE_SIZE,
+    FINANCE_CLASSIFIER_BATCH_SIZE,
 )
 from services.repository import create_operation_log
 from routes.auth import current_username
@@ -17,6 +20,39 @@ from routes.auth import current_username
 records_bp = Blueprint("records", __name__)
 
 VALID_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp"}
+
+# 五分类模型（单例延迟加载）
+_finance_model = None
+_finance_names = None
+
+
+def _load_finance_classifier():
+    """加载金融影像五分类模型（单例）"""
+    global _finance_model, _finance_names
+    if _finance_model is None:
+        from ultralytics import YOLO
+        if not FINANCE_CLASSIFIER_MODEL_PATH.is_file():
+            raise FileNotFoundError(f"五分类模型权重不存在: {FINANCE_CLASSIFIER_MODEL_PATH}")
+        _finance_model = YOLO(str(FINANCE_CLASSIFIER_MODEL_PATH))
+        raw_names = _finance_model.names
+        _finance_names = raw_names if isinstance(raw_names, dict) else dict(enumerate(raw_names))
+    return _finance_model, _finance_names
+
+
+def _classify_images(image_paths):
+    """对图片列表执行五分类，返回每张图片的预测标签列表"""
+    if not image_paths:
+        return []
+    model, names = _load_finance_classifier()
+    predictions = []
+    for i in range(0, len(image_paths), FINANCE_CLASSIFIER_BATCH_SIZE):
+        batch = image_paths[i:i + FINANCE_CLASSIFIER_BATCH_SIZE]
+        results = model([str(p) for p in batch], verbose=False, imgsz=FINANCE_CLASSIFIER_IMAGE_SIZE)
+        for result in results:
+            probs = result.probs.data.cpu().numpy()
+            pred_id = int(probs.argmax())
+            predictions.append(names[pred_id])
+    return predictions
 
 
 def _find_matching_file(directory, field_name):
@@ -43,7 +79,7 @@ def _find_matching_file(directory, field_name):
 
 @records_bp.route("/api/scan/<session_id>", methods=["GET"])
 def scan_records(session_id):
-    """扫描上传目录，返回 loan_* 子目录记录列表"""
+    """扫描上传目录，使用五分类模型分类图片并返回 loan_* 记录列表"""
     session_dir = get_upload_session_dir(session_id)
     if not session_dir or not session_dir.exists():
         return jsonify({"code": 404, "message": "上传文件夹不存在，请先上传"}), 404
@@ -56,22 +92,23 @@ def scan_records(session_id):
         if not loan_id.lower().startswith("loan"):
             continue
 
-        fields = {}
-        for field_name in LOAN_FIELDS:
-            matching = _find_matching_file(entry, field_name)
-            if matching:
-                rel_path = str(matching.relative_to(session_dir)).replace("\\", "/")
-                fields[field_name] = {
-                    "exists": True,
-                    "file_path": rel_path,
-                    "filename": matching.name,
-                }
-            else:
-                fields[field_name] = {
-                    "exists": False,
-                    "file_path": "",
-                    "filename": "",
-                }
+        # 收集该 loan 目录下所有图片
+        image_files = sorted(
+            f for f in entry.iterdir()
+            if f.is_file() and f.suffix.lower() in VALID_EXTENSIONS
+        )
+
+        fields = {field: {"exists": False, "file_path": "", "filename": ""} for field in LOAN_FIELDS}
+        if image_files:
+            predictions = _classify_images(image_files)
+            for img_file, pred_label in zip(image_files, predictions):
+                if pred_label in fields:
+                    rel_path = str(img_file.relative_to(session_dir)).replace("\\", "/")
+                    fields[pred_label] = {
+                        "exists": True,
+                        "file_path": rel_path,
+                        "filename": img_file.name,
+                    }
 
         records.append({
             "loan_id": loan_id,

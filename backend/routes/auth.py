@@ -1,5 +1,6 @@
 """认证相关 API — 任意输入均可登录"""
 import uuid
+from datetime import datetime
 from flask import Blueprint, request, jsonify, session
 from services.repository import create_operation_log
 
@@ -32,6 +33,7 @@ def login():
         username = "anonymous"
 
     token = generate_token()
+    login_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if username not in users:
         users[username] = {
             "username": username,
@@ -49,6 +51,8 @@ def login():
         "data": {
             "username": username,
             "token": token,
+            "role": "业务员",
+            "loginTime": login_time,
         }
     })
 

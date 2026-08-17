@@ -100,7 +100,7 @@
           </el-button>
           <el-button type="warning" size="large" :loading="detecting" :disabled="detecting" @click="goToDetection" class="btn-breathe-warning">
             <el-icon><Search /></el-icon>
-            {{ detecting ? '检测中...' : '检测' }}
+            {{ detecting ? '检测中...' : '开始检测' }}
           </el-button>
         </div>
       </div>
@@ -151,7 +151,7 @@ const props = defineProps({
   autoStart: { type: Boolean, default: false },
 })
 
-const emit = defineEmits(['go-back', 'detect-start', 'detect-success', 'detect-failed'])
+const emit = defineEmits(['go-back', 'scan-success', 'scan-failed', 'detect-start', 'detect-success', 'detect-failed'])
 
 const loading = ref(false)
 const scanned = ref(false)
@@ -185,8 +185,10 @@ const doScan = async () => {
     const res = await scanRecords(props.sessionId)
     records.value = res.data.records || []
     scanned.value = true
+    emit('scan-success')
     ElMessage.success(res.message || '扫描完成')
   } catch (e) {
+    emit('scan-failed')
     ElMessage.error('扫描失败：' + (e.message || '未知错误'))
   } finally {
     loading.value = false

@@ -3,7 +3,6 @@ from datetime import date, timedelta
 from flask import Blueprint, request, jsonify
 from services.repository import list_tasks, get_task, list_cases, get_case, update_case_status, analytics, all_analytics, create_operation_log, list_operation_logs
 from routes.auth import current_username
-from services.task_runner import submit_detection_task
 
 history_bp = Blueprint("history", __name__)
 
@@ -16,23 +15,6 @@ def tasks():
 def task_detail(task_id):
     task = get_task(task_id)
     return jsonify({"code": 200, "data": task}) if task else (jsonify({"code": 404, "message": "检测任务不存在"}), 404)
-
-@history_bp.route("/api/history/tasks/<task_id>/start", methods=["POST"])
-def start_task(task_id):
-    task, error = submit_detection_task(task_id)
-    if error:
-        return jsonify({"code": 404, "message": error}), 404
-    return jsonify({"code": 200, "data": {"taskId": task_id, "status": task["status"], "progress": task.get("progress", 0), "currentStep": task.get("currentStep")}})
-
-@history_bp.route("/api/history/tasks/<task_id>/status", methods=["GET"])
-def task_status(task_id):
-    task = get_task(task_id)
-    if not task:
-        return jsonify({"code": 404, "message": "检测任务不存在"}), 404
-    # Classification is persisted before similarity detection starts.  Returning
-    # the task here lets the client display the screened face-signing count while
-    # the similarity phase is still running.
-    return jsonify({"code": 200, "data": {"taskId": task_id, "status": task["status"], "progress": task.get("progress", 0), "currentStep": task.get("currentStep"), "message": task.get("errorMessage") or "", "result": task}})
 
 @history_bp.route("/api/risk/cases", methods=["GET"])
 def cases():

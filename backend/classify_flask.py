@@ -13,18 +13,16 @@ classify_flask.py — 面签照筛选 Flask 接口
 """
 import sys
 import os
+import json
 import traceback
 from pathlib import Path
+import numpy as np
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
+from PIL import Image
 import torch
 from ultralytics import YOLO
-from config import (
-    FINANCE_CLASSIFIER_BATCH_SIZE,
-    FINANCE_CLASSIFIER_IMAGE_SIZE,
-    FINANCE_CLASSIFIER_MODEL_PATH,
-)
 
 # ============================================
 # 配置
@@ -33,12 +31,12 @@ from config import (
 PROJECT_DIR = Path(__file__).parent.parent
 
 # 模型路径
-YOLO_MODEL_PATH = FINANCE_CLASSIFIER_MODEL_PATH
+YOLO_MODEL_PATH = PROJECT_DIR / "yolo26n.pt"
 
 # 人物检测参数 (与 baseline_classify1.py 保持一致)
 PERSON_CLASS_ID = 0       # YOLO COCO class 0 = person
 CONF_THRESHOLD = 0.25     # 置信度阈值
-BATCH_SIZE = FINANCE_CLASSIFIER_BATCH_SIZE
+BATCH_SIZE = 16           # 批量处理大小
 
 # 图片扩展名
 VALID_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".webp"}
@@ -51,7 +49,6 @@ IMAGE_TYPES = {
     "bank_statement": "银行流水",
     "contract": "合同文档",
 }
-CLASS_LABELS = tuple(IMAGE_TYPES)
 
 # ============================================
 # Flask 应用
@@ -79,15 +76,9 @@ def load_model():
     """加载 YOLO26n 模型 (单例)"""
     global _yolo_model
     if _yolo_model is None:
-        if not YOLO_MODEL_PATH.is_file():
-            raise FileNotFoundError(f"五分类模型权重不存在: {YOLO_MODEL_PATH}")
-        print(f"[模型] 加载金融影像五分类模型: {YOLO_MODEL_PATH}")
+        print(f"[模型] 加载 YOLO: {YOLO_MODEL_PATH}")
         print(f"[模型] 设备: {get_device()}")
         _yolo_model = YOLO(str(YOLO_MODEL_PATH))
-        names = _yolo_model.names if isinstance(_yolo_model.names, dict) else dict(enumerate(_yolo_model.names))
-        missing_labels = [label for label in CLASS_LABELS if label not in names.values()]
-        if missing_labels:
-            raise ValueError(f"模型缺少预期类别: {missing_labels}")
     return _yolo_model
 
 
@@ -155,35 +146,55 @@ def scan_folder(folder_path: str) -> list:
     return images
 
 
-def classify_financial_images(images: list) -> list:
-    """Classify images with the trained five-class financial-image model."""
+def detect_persons(images: list) -> tuple:
+    """
+    使用 YOLO26n 检测每张图中是否包含人
+    与 baseline_classify1.py 的 detect_persons() 逻辑完全一致
+
+    返回:
+        has_person (np.ndarray): bool 数组, 是否检测到人
+        confidences (np.ndarray): float 数组, 最高人物置信度 (无人则为 0)
+    """
     model = load_model()
-    model_names = model.names if isinstance(model.names, dict) else dict(enumerate(model.names))
-    name_to_index = {name: index for index, name in model_names.items()}
-    predictions = []
+    has_person_preds = []
+    all_confidences = []
 
     for i in range(0, len(images), BATCH_SIZE):
         batch = images[i:i + BATCH_SIZE]
-        results = model(
-            [item["full_path"] for item in batch],
-            verbose=False,
-            imgsz=FINANCE_CLASSIFIER_IMAGE_SIZE,
-            device=0 if torch.cuda.is_available() else "cpu",
-        )
-        for result in results:
-            probabilities = result.probs.data.detach().cpu().numpy()
-            class_id = int(probabilities.argmax())
-            label = model_names[class_id]
-            predictions.append({
-                "pred_label": label,
-                "confidence": float(probabilities[class_id]),
-                "probabilities": {
-                    class_label: float(probabilities[class_index])
-                    for class_label, class_index in name_to_index.items()
-                },
-            })
 
-    return predictions
+        for img_info in batch:
+            try:
+                results = model(img_info["full_path"], verbose=False)
+                result = results[0]
+
+                if result.boxes is not None and len(result.boxes) > 0:
+                    boxes = result.boxes
+                    cls_ids = boxes.cls.cpu().numpy() if boxes.cls is not None else []
+                    confs = boxes.conf.cpu().numpy() if boxes.conf is not None else []
+
+                    # 筛选 person 类别的检测结果
+                    person_mask = (cls_ids == PERSON_CLASS_ID)
+                    person_confs = confs[person_mask]
+
+                    # 过滤低于置信度阈值的结果
+                    person_confs = person_confs[person_confs >= CONF_THRESHOLD]
+
+                    if len(person_confs) > 0:
+                        has_person_preds.append(True)
+                        all_confidences.append(float(person_confs.max()))
+                    else:
+                        has_person_preds.append(False)
+                        all_confidences.append(0.0)
+                else:
+                    has_person_preds.append(False)
+                    all_confidences.append(0.0)
+
+            except Exception as e:
+                print(f"  [警告] 无法处理 {img_info['full_path']}: {e}")
+                has_person_preds.append(False)
+                all_confidences.append(0.0)
+
+    return np.array(has_person_preds), np.array(all_confidences)
 
 
 def classify_folder(folder_path: str) -> dict:
@@ -212,8 +223,8 @@ def classify_folder(folder_path: str) -> dict:
             "all_images": [],
             "loan_dirs": {},
             "metrics": {
-                "model": "finance_5cls_best.pt",
-                "labels": list(CLASS_LABELS),
+                "model": "yolo26n",
+                "conf_threshold": CONF_THRESHOLD,
                 "person_ratio": 0.0,
             }
         }
@@ -225,31 +236,28 @@ def classify_folder(folder_path: str) -> dict:
         loan_dirs[lid] = loan_dirs.get(lid, 0) + 1
 
     print(f"[分类] 找到 {len(images)} 张图片, 分布在 {len(loan_dirs)} 个目录")
-    print("[分类] 开始金融影像五分类...")
-    predictions = classify_financial_images(images)
+    print(f"[分类] 开始 YOLO 人物检测...")
+
+    y_pred_bool, y_confidences = detect_persons(images)
 
     # 组装结果
     all_images = []
     face_signing_images = []
 
     for i, img_info in enumerate(images):
-        prediction = predictions[i]
         result = {
             "image_id": img_info["image_id"],
             "file_path": img_info["file_path"],
-            "image_type": prediction["pred_label"],
-            "image_type_cn": IMAGE_TYPES[prediction["pred_label"]],
+            "image_type": img_info["image_type"],
+            "image_type_cn": img_info["image_type_cn"],
             "loan_id": img_info["loan_id"],
             "filename": img_info["filename"],
-            "pred_label": prediction["pred_label"],
-            "confidence": prediction["confidence"],
-            "probabilities": prediction["probabilities"],
-            "has_person": prediction["pred_label"] == "face_signing",
-            "person_confidence": prediction["confidence"] if prediction["pred_label"] == "face_signing" else 0.0,
+            "has_person": bool(y_pred_bool[i]),
+            "person_confidence": float(y_confidences[i]),
         }
         all_images.append(result)
 
-        if prediction["pred_label"] == "face_signing":
+        if bool(y_pred_bool[i]):
             face_signing_images.append(result)
 
     n_person = len(face_signing_images)
@@ -263,8 +271,8 @@ def classify_folder(folder_path: str) -> dict:
         "all_images": all_images,
         "loan_dirs": loan_dirs,
         "metrics": {
-            "model": "finance_5cls_best.pt",
-            "labels": list(CLASS_LABELS),
+            "model": "yolo26n",
+            "conf_threshold": CONF_THRESHOLD,
             "person_ratio": round(n_person / len(images), 4) if images else 0.0,
             "device": str(get_device()),
         }
@@ -346,16 +354,17 @@ def api_classify():
 @app.route("/api/classify/health", methods=["GET"])
 def api_health():
     """健康检查"""
-    model_path_exists = YOLO_MODEL_PATH.is_file()
+    model_path_exists = YOLO_MODEL_PATH.exists()
     return jsonify({
         "success": True,
         "status": "running",
-        "model": "finance_5cls_best.pt",
+        "model": "yolo26n",
         "model_loaded": _yolo_model is not None,
         "model_path_exists": model_path_exists,
         "model_path": str(YOLO_MODEL_PATH),
         "device": str(get_device()),
-        "labels": list(CLASS_LABELS),
+        "conf_threshold": CONF_THRESHOLD,
+        "person_class_id": PERSON_CLASS_ID,
     })
 
 

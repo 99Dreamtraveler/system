@@ -24,17 +24,6 @@
       </el-card>
     </section>
 
-    <el-card shadow="never" class="model-card">
-      <template #header><div class="card-title"><el-icon><Cpu /></el-icon>模型信息</div></template>
-      <el-table :data="models" size="default" :header-cell-style="tableHeaderStyle">
-        <el-table-column prop="name" label="模型组件" min-width="160" />
-        <el-table-column prop="purpose" label="用途" min-width="260" />
-        <el-table-column prop="source" label="模型来源" min-width="200" />
-        <el-table-column label="状态" width="120"><template #default><el-tag type="success" size="small">本地配置</el-tag></template></el-table-column>
-      </el-table>
-      <p class="model-note">模型由现有后端程序加载；本页不提供模型管理、上传、选择或训练操作。</p>
-    </el-card>
-
     <el-card shadow="never" class="log-card">
       <template #header><div class="card-title"><el-icon><List /></el-icon>操作日志</div></template>
       <div v-if="logsLoading" class="log-loading"><el-skeleton :rows="4" animated /></div>
@@ -52,7 +41,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { CircleCheckFilled, Cpu, List, Monitor, UserFilled } from '@element-plus/icons-vue'
+import { CircleCheckFilled, List, Monitor, UserFilled } from '@element-plus/icons-vue'
 import { getOperationLogs } from '../api/operationLogs'
 
 const readCurrentUser = () => {
@@ -61,15 +50,10 @@ const readCurrentUser = () => {
 const currentUser = readCurrentUser()
 const user = computed(() => ({
   username: currentUser.username || 'anonymous',
-  role: currentUser.role || '待确认',
-  loginTime: currentUser.loginTime || currentUser.loginAt || '当前代码未记录',
+  role: '业务员',
+  loginTime: currentUser.loginTime || '尚未登录',
 }))
 
-const models = [
-  { name: 'YOLO26n', purpose: '面签照片人物筛选', source: '本地模型权重' },
-  { name: 'CLIP + LoRA + Projection', purpose: '面签照片特征提取与相似度计算', source: '本地训练权重' },
-]
-const tableHeaderStyle = { background: 'var(--bg-card-hover)', color: 'var(--text-secondary)', fontWeight: 600 }
 const operationLogs = ref([])
 const logTotal = ref(0)
 const logPage = ref(1)
@@ -95,6 +79,6 @@ onMounted(loadLogs)
 </script>
 
 <style scoped>
-.settings-page{max-width:1400px;margin:0 auto}.page-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:4px 0 20px}.page-heading h2{margin:0 0 7px;color:var(--text-primary);font-size:24px}.page-heading p{margin:0;color:var(--text-secondary);font-size:14px}.page-heading .el-tag{display:flex;gap:6px;align-items:center}.info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-bottom:20px}.info-card,.model-card,.log-card{border-color:var(--border-color);border-radius:var(--radius-md);background:var(--bg-card)}.model-card{margin-bottom:20px}.card-title{display:flex;align-items:center;gap:8px;color:var(--text-primary);font-size:16px;font-weight:600}.card-title .el-icon{color:var(--accent)}.model-note{margin:14px 0 0;color:var(--text-muted);font-size:13px}.log-card :deep(.el-timeline-item__timestamp){color:var(--text-muted);font-size:12px}.log-card strong{color:var(--text-primary);font-size:14px}.log-card p{margin:6px 0 0;color:var(--text-secondary);font-size:13px}.log-loading{padding:8px 0}.log-state{display:flex;align-items:center;gap:16px}.log-state .el-alert{flex:1}.log-pagination{display:flex;justify-content:flex-end;margin-top:16px}@media(max-width:850px){.info-grid{grid-template-columns:1fr}.page-heading{flex-direction:column}.model-card :deep(.el-table){overflow-x:auto}}@media(max-width:560px){.settings-page{min-width:0}.page-heading .el-tag{max-width:100%}.info-card :deep(.el-descriptions__label){width:88px}.log-state{align-items:stretch;flex-direction:column}}
+.settings-page{max-width:1400px;margin:0 auto}.page-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:4px 0 20px}.page-heading h2{margin:0 0 7px;color:var(--text-primary);font-size:24px}.page-heading p{margin:0;color:var(--text-secondary);font-size:14px}.page-heading .el-tag{display:flex;gap:6px;align-items:center}.info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;margin-bottom:20px}.info-card,.log-card{border-color:var(--border-color);border-radius:var(--radius-md);background:var(--bg-card)}.card-title{display:flex;align-items:center;gap:8px;color:var(--text-primary);font-size:16px;font-weight:600}.card-title .el-icon{color:var(--accent)}.log-card :deep(.el-timeline-item__timestamp){color:var(--text-muted);font-size:12px}.log-card strong{color:var(--text-primary);font-size:14px}.log-card p{margin:6px 0 0;color:var(--text-secondary);font-size:13px}.log-loading{padding:8px 0}.log-state{display:flex;align-items:center;gap:16px}.log-state .el-alert{flex:1}.log-pagination{display:flex;justify-content:flex-end;margin-top:16px}@media(max-width:850px){.info-grid{grid-template-columns:1fr}.page-heading{flex-direction:column}}@media(max-width:560px){.settings-page{min-width:0}.page-heading .el-tag{max-width:100%}.info-card :deep(.el-descriptions__label){width:88px}.log-state{align-items:stretch;flex-direction:column}}
 .log-entry{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.log-user{color:var(--text-secondary);font-size:13px}
 </style>

@@ -50,10 +50,6 @@ export const uploadFolder = (formData) =>
     headers: { 'Content-Type': 'multipart/form-data' },
   })
 
-// 分类
-export const runClassify = (sessionId) =>
-  api.post('/classify', { session_id: sessionId })
-
 // 相似度检测
 export const runSimilarity = (sessionId, faceImages, threshold) =>
   api.post('/similarity/detect', {
@@ -61,9 +57,6 @@ export const runSimilarity = (sessionId, faceImages, threshold) =>
     face_images: faceImages,
     threshold: threshold || 0.90,
   })
-
-export const startDetectionTask = (taskId) => api.post(`/history/tasks/${encodeURIComponent(taskId)}/start`)
-export const getDetectionTaskStatus = (taskId) => api.get(`/history/tasks/${encodeURIComponent(taskId)}/status`)
 
 // 新增: folder_path 模式直接检测
 export const runSimilarityByFolder = (folderPath, threshold) =>

@@ -112,7 +112,10 @@ import LoginRegister from '../components/LoginRegister.vue'
 const router = useRouter()
 
 const onLoginSuccess = (user) => {
-  localStorage.setItem('user', JSON.stringify(user))
+  localStorage.setItem('user', JSON.stringify({
+    ...user,
+    role: '业务员',
+  }))
   router.push('/dashboard')
 }
 </script>

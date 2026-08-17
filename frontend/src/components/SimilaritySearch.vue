@@ -66,7 +66,7 @@
         <div class="groups-section" v-if="result.similar_groups.length > 0">
           <h3>
             <el-icon :size="20" color="var(--warning)"><Connection /></el-icon>
-            相似组列表 — 共 {{ result.similar_groups.length }} 组
+            风险交易列表 — 共 {{ result.similar_groups.length }} 组
           </h3>
 
           <el-collapse v-model="activeGroups" accordion>
@@ -143,7 +143,22 @@
           description="未发现可疑相似组，所有面签照均为独立交易"
         />
 
-        <section v-if="result.suspicious_pairs?.length" class="pairs-section">
+        <!-- 操作按钮 -->
+        <div class="result-actions">
+          <el-button @click="goBack" size="large">
+            <el-icon><ArrowLeft /></el-icon>
+            返回筛选
+          </el-button>
+          <el-button v-if="result.suspicious_pairs?.length" @click="showDetail = !showDetail" size="large">
+            {{ showDetail ? '收起明细' : '查看明细' }}
+          </el-button>
+          <el-button @click="runSearch" size="large" class="btn-breathe-warning">
+            <el-icon><Refresh /></el-icon>
+            重新检索
+          </el-button>
+        </div>
+
+        <section v-if="showDetail && result.suspicious_pairs?.length" class="pairs-section">
           <h3>相似度明细</h3>
           <el-table :data="result.suspicious_pairs" size="small" stripe>
             <el-table-column prop="image_1" label="图片 A" min-width="160" />
@@ -153,18 +168,6 @@
             </el-table-column>
           </el-table>
         </section>
-
-        <!-- 操作按钮 -->
-        <div class="result-actions">
-          <el-button @click="goBack" size="large">
-            <el-icon><ArrowLeft /></el-icon>
-            返回筛选
-          </el-button>
-          <el-button @click="runSearch" size="large" class="btn-breathe-warning">
-            <el-icon><Refresh /></el-icon>
-            重新检索
-          </el-button>
-        </div>
       </div>
     </el-card>
 
@@ -270,6 +273,7 @@ const stopPhaseCycle = () => {
 const relatedDialogVisible = ref(false)
 const currentLoanId = ref('')
 const relatedFiles = ref([])
+const showDetail = ref(false)
 
 const getImageUrl = (filePath) => {
   return getFileUrl(props.sessionId, filePath)

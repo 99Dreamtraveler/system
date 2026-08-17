@@ -203,8 +203,7 @@ const resetUpload = () => {
 
 <style scoped>
 .upload-section {
-  max-width: 900px;
-  margin: 0 auto;
+  margin-bottom: 20px;
 }
 
 .upload-card {

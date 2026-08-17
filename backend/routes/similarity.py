@@ -61,11 +61,33 @@ def run_similarity():
             if not face_images:
                 return jsonify({"code": 400, "message": "请提供面签照列表 face_images"}), 400
 
+            # YOLO 预筛选 — 检测每张面签照是否包含人物
+            from classify_flask import load_model, PERSON_CLASS_ID, CONF_THRESHOLD
             from services.repository import update_classification
-            filtered_images = [
-                img_info for img_info in face_images
-                if (session_dir / img_info.get("file_path", "")).is_file()
-            ]
+            create_operation_log(current_username(), "面签照筛选",
+                                 f"检测任务 {session_id} 开始YOLO面签照筛选，共{len(face_images)}张", "warning")
+
+            model = load_model()
+            filtered_images = []
+            for img_info in face_images:
+                file_path = img_info.get("file_path", "")
+                full_path = session_dir / file_path
+                if not full_path.exists():
+                    continue
+                try:
+                    results = model(str(full_path), verbose=False)
+                    result_box = results[0]
+                    if result_box.boxes is not None and len(result_box.boxes) > 0:
+                        cls_ids = result_box.boxes.cls.cpu().numpy()
+                        confs = result_box.boxes.conf.cpu().numpy()
+                        person_mask = (cls_ids == PERSON_CLASS_ID)
+                        person_confs = confs[person_mask]
+                        person_confs = person_confs[person_confs >= CONF_THRESHOLD]
+                        if len(person_confs) > 0:
+                            img_info["person_confidence"] = float(person_confs.max())
+                            filtered_images.append(img_info)
+                except Exception:
+                    pass
 
             # 更新分类统计到数据库
             update_classification(session_id, {
@@ -82,8 +104,8 @@ def run_similarity():
                     "message": f"面签照筛选后有效图片不足（需至少2张，当前{len(filtered_images)}张）",
                 }), 400
 
-            create_operation_log(current_username(), "面签照分类完成",
-                                 f"五分类筛选出 {len(filtered_images)} 张面签合影照片", "success")
+            create_operation_log(current_username(), "面签照筛选完成",
+                                 f"YOLO筛选: {len(face_images)}→{len(filtered_images)}张", "success")
 
             result = detect_similarity(filtered_images, str(session_dir), threshold)
 
