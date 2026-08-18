@@ -110,8 +110,8 @@ const tableHeaderStyle = { background: 'var(--bg-card-hover)', color: 'var(--tex
 const formatNumber = (value) => new Intl.NumberFormat('zh-CN').format(value)
 const riskTagType = (level) => ({ 待检测: 'info', 高风险: 'danger', 中风险: 'warning', 低风险: 'success' }[level] || 'info')
 const statusTagType = (status) => ({ 待检测: 'info', 检测中: 'primary', 已完成: 'success', 检测失败: 'danger' }[status] || 'info')
-const openTask = (id) => router.push({ path: '/tasks', query: { taskId: id } })
-const openCase = (id) => router.push({ path: '/risk-cases', query: { caseId: id } })
+const openTask = (id) => router.push(`/tasks/${id}`)
+const openCase = (id) => router.push(`/cases/${id}`)
 const refreshStatistics = async () => {
   try {
     const res = await getAnalyticsStatistics('7d')

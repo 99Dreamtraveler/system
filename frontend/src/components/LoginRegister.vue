@@ -157,58 +157,74 @@ const handleRegister = async () => {
 }
 
 .auth-tabs :deep(.el-tabs__header) {
-  margin-bottom: 28px;
+  margin-bottom: 26px;
 }
 
 .auth-tabs :deep(.el-tabs__nav-wrap::after) {
   height: 1px;
-  background-color: #eef1f6;
+  background-color: rgba(158, 200, 230, 0.18);
 }
 
 .auth-tabs :deep(.el-tabs__item) {
   font-size: 15px;
   font-weight: 600;
-  padding: 0 20px;
-  color: #94a3b8;
+  padding: 0 18px;
+  color: #96aec3;
 }
 
 .auth-tabs :deep(.el-tabs__item.is-active) {
-  color: #4f46e5;
+  color: #ffffff;
 }
 
 .auth-tabs :deep(.el-tabs__active-bar) {
-  background-color: #4f46e5;
+  background-color: #5ab8f3;
 }
 
 .auth-form :deep(.el-form-item__label) {
   font-size: 13px;
   font-weight: 500;
-  color: #475569;
-  padding-bottom: 4px;
+  color: #c8d8e6;
+  padding-bottom: 6px;
 }
 
 .auth-form :deep(.el-input__wrapper) {
-  border-radius: 8px;
-  box-shadow: 0 0 0 1px #e2e8f0;
-  padding: 4px 12px;
+  border-radius: 6px;
+  background: rgba(6, 26, 53, 0.55);
+  box-shadow: 0 0 0 1px rgba(180, 214, 239, 0.24);
+  padding: 4px 13px;
   transition: all 0.2s;
 }
 
 .auth-form :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px #cbd5e1;
+  box-shadow: 0 0 0 1px rgba(139, 202, 241, 0.5);
 }
 
 .auth-form :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 0 0 2px rgba(90, 184, 243, 0.38);
 }
+
+.auth-form :deep(.el-input__inner) { color: #edf5ff; }
+.auth-form :deep(.el-input__inner::placeholder) { color: #7192ad; }
+.auth-form :deep(.el-input__prefix-inner), .auth-form :deep(.el-input__suffix-inner) { color: #81a8c7; }
 
 .submit-btn {
   width: 100%;
-  margin-top: 12px;
-  height: 46px;
+  height: 49px;
+  margin-top: 13px;
+  border: 0;
+  border-radius: 6px;
+  background: #217fbf !important;
+  box-shadow: 0 10px 22px rgba(27, 133, 207, 0.25) !important;
+  animation: none !important;
+  color: #fff !important;
   font-size: 15px;
   font-weight: 600;
-  letter-spacing: 2px;
-  border-radius: 10px;
+  letter-spacing: 3px;
+}
+
+.submit-btn:hover, .submit-btn:focus-visible {
+  background: #3196d7 !important;
+  box-shadow: 0 12px 25px rgba(43, 159, 222, 0.32) !important;
+  transform: translateY(-1px);
 }
 </style>

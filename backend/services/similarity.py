@@ -39,6 +39,12 @@ def get_device():
     return _device
 
 
+def format_group_id(index, total_groups):
+    """Format a one-based group index using the current result's width."""
+    width = max(1, len(str(total_groups)))
+    return str(index).zfill(width)
+
+
 def load_similarity_model():
     """加载 CLIP + LoRA + Projection 模型（单例）"""
     global _similarity_model, _similarity_processor
@@ -311,7 +317,7 @@ def detect_from_folder(folder_path, threshold=None):
     for idx, members in enumerate(groups, 1):
         avg_sim, max_sim = _compute_group_similarities(members, features)
         similar_groups.append({
-            "group_id": f"SG_{idx:03d}",
+            "group_id": format_group_id(idx, len(groups)),
             "images": [{"file_path": p, "filename": Path(p).name} for p in members],
             "count": len(members),
             "avg_similarity": avg_sim,
@@ -418,7 +424,7 @@ def detect_from_images(face_images, session_dir, threshold=None):
             })
 
         similar_groups.append({
-            "group_id": f"SG_{idx:03d}",
+            "group_id": format_group_id(idx, len(groups)),
             "images": images_meta,
             "count": len(members),
             "avg_similarity": avg_sim,

@@ -54,7 +54,7 @@
           <el-icon><Upload /></el-icon>
           上传文件夹
         </el-button>
-        <el-button size="large" @click="resetUpload" :disabled="selectedFiles.length === 0">
+        <el-button type="primary" size="large" class="upload-btn btn-breathe" @click="resetUpload" :disabled="selectedFiles.length === 0">
           重置
         </el-button>
       </div>

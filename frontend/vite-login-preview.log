@@ -1,0 +1,14 @@
+
+> financial-image-similarity@1.0.0 dev
+> vite --host 127.0.0.1 --port 5173
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+Port 5173 is in use, trying another one...
+Port 5174 is in use, trying another one...
+
+  VITE v5.4.21  ready in 513 ms
+
+  ➜  Local:   http://127.0.0.1:5175/
+  ➜  press h + enter to show help
+20:59:32 [vite] hmr update /src/components/AppLayout.vue
+21:03:44 [vite] hmr update /src/components/AppLayout.vue

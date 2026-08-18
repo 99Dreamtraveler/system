@@ -17,7 +17,7 @@
       <el-card v-else class="upload-complete-card" shadow="never">
         <div class="upload-complete-main"><el-icon :size="28" color="var(--success)"><CircleCheckFilled /></el-icon><div><h3>上传影像文件夹</h3><p>文件夹名称：<strong>{{ uploadInfo.folderName }}</strong></p></div></div>
         <div class="upload-meta"><div><span>文件数量</span><strong>{{ uploadInfo.totalFiles }}</strong></div><div><span>上传状态</span><el-tag type="success" effect="light">上传完成</el-tag></div></div>
-        <div class="upload-actions"><el-button @click="resetTask">重新上传</el-button><el-button type="primary" size="large" :loading="processing" :disabled="processing" @click="startDetection"><el-icon><VideoPlay /></el-icon>{{ processing ? '分类中...' : (classified ? '分类完毕' : '开始分类') }}</el-button></div>
+        <div class="upload-actions"><el-button type="primary" size="large" @click="resetTask">重新上传</el-button><el-button type="primary" size="large" :loading="processing" :disabled="processing" @click="startDetection"><el-icon><VideoPlay /></el-icon>{{ processing ? '分类中...' : (classified ? '分类完毕' : '开始分类') }}</el-button></div>
       </el-card>
     </section>
 
@@ -29,7 +29,7 @@
 
     <div class="detection-content">
       <LoanRecordTable v-if="currentStep === 1" :session-id="sessionId" :auto-start="processing" @scan-success="onScanSuccess" @scan-failed="onDetectionFailed" @detect-start="onDetectStart" @detect-success="onSimilaritySuccess" @detect-failed="onDetectionFailed" @go-back="resetTask"/>
-      <SimilaritySearch v-if="currentStep === 2" :session-id="sessionId" :face-images="faceImages" :auto-start="true" @search-success="onSimilaritySuccess" @search-failed="onDetectionFailed" @go-back="currentStep = 1"/>
+      <SimilaritySearch v-if="currentStep >= 2" :session-id="sessionId" :face-images="faceImages" :auto-start="true" @search-success="onSimilaritySuccess" @search-failed="onDetectionFailed" @go-back="currentStep = 1"/>
     </div>
   </section>
 </template>
@@ -68,7 +68,7 @@ const onUploadSuccess = (data) => { sessionId.value = data.session_id; uploadInf
 const startDetection = () => { processing.value = true; classified.value = false; taskSummary.value = null; similarityResult.value = null; startedAt.value = Date.now(); currentStep.value = 1 }
 const onScanSuccess = () => { processing.value = false; classified.value = true }
 const onDetectStart = (images) => { faceImages.value = images || []; currentStep.value = 2 }
-const onSimilaritySuccess = (result) => { similarityResult.value = result || {}; const durationSeconds = Math.max(1, Math.round((Date.now() - startedAt.value) / 1000)); taskSummary.value = { taskId: sessionId.value, detectedAt: new Date().toLocaleString('zh-CN', { hour12: false }), duration: `${durationSeconds} 秒` } }
+const onSimilaritySuccess = (result) => { similarityResult.value = result || {}; const durationSeconds = Math.max(1, Math.round((Date.now() - startedAt.value) / 1000)); taskSummary.value = { taskId: sessionId.value, detectedAt: new Date().toLocaleString('zh-CN', { hour12: false }), duration: `${durationSeconds} 秒` }; currentStep.value = 3 }
 const onDetectionFailed = () => { processing.value = false }
 const resetTask = () => { currentStep.value = 0; sessionId.value = ''; faceImages.value = []; uploadInfo.value = null; processing.value = false; classified.value = false; taskSummary.value = null; similarityResult.value = null }
 </script>

@@ -8,7 +8,7 @@
         <el-form-item label="日期范围"><el-date-picker v-model="filters.dateRange" type="daterange" value-format="YYYY-MM-DD" range-separator="至" start-placeholder="开始日期" end-placeholder="结束日期" /></el-form-item>
         <el-form-item label="任务状态"><el-select v-model="filters.status" clearable placeholder="全部"><el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" /></el-select></el-form-item>
         <el-form-item label="风险等级"><el-select v-model="filters.riskLevel" clearable placeholder="全部"><el-option v-for="item in riskOptions" :key="item" :label="item" :value="item" /></el-select></el-form-item>
-        <div class="filter-actions"><el-button type="primary" native-type="submit" :loading="loading"><el-icon><Search /></el-icon>查询</el-button><el-button @click="resetFilters">重置</el-button></div>
+        <div class="filter-actions"><el-button type="primary" native-type="submit" :loading="loading"><el-icon><Search /></el-icon>查询</el-button><el-button type="primary" @click="resetFilters">重置</el-button></div>
       </el-form>
     </el-card>
 
