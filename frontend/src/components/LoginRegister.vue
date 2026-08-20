@@ -162,50 +162,50 @@ const handleRegister = async () => {
 
 .auth-tabs :deep(.el-tabs__nav-wrap::after) {
   height: 1px;
-  background-color: rgba(158, 200, 230, 0.18);
+  background-color: #e5ebf0;
 }
 
 .auth-tabs :deep(.el-tabs__item) {
   font-size: 15px;
   font-weight: 600;
   padding: 0 18px;
-  color: #96aec3;
+  color: #718393;
 }
 
 .auth-tabs :deep(.el-tabs__item.is-active) {
-  color: #ffffff;
+  color: #167bc5;
 }
 
 .auth-tabs :deep(.el-tabs__active-bar) {
-  background-color: #5ab8f3;
+  background-color: #167bc5;
 }
 
 .auth-form :deep(.el-form-item__label) {
   font-size: 13px;
   font-weight: 500;
-  color: #c8d8e6;
+  color: #344b5d;
   padding-bottom: 6px;
 }
 
 .auth-form :deep(.el-input__wrapper) {
   border-radius: 6px;
-  background: rgba(6, 26, 53, 0.55);
-  box-shadow: 0 0 0 1px rgba(180, 214, 239, 0.24);
+  background: #ffffff;
+  box-shadow: 0 0 0 1px #d6e0e8;
   padding: 4px 13px;
   transition: all 0.2s;
 }
 
 .auth-form :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px rgba(139, 202, 241, 0.5);
+  box-shadow: 0 0 0 1px #9fc6df;
 }
 
 .auth-form :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 2px rgba(90, 184, 243, 0.38);
+  box-shadow: 0 0 0 2px rgba(22, 123, 197, 0.25);
 }
 
-.auth-form :deep(.el-input__inner) { color: #edf5ff; }
-.auth-form :deep(.el-input__inner::placeholder) { color: #7192ad; }
-.auth-form :deep(.el-input__prefix-inner), .auth-form :deep(.el-input__suffix-inner) { color: #81a8c7; }
+.auth-form :deep(.el-input__inner) { color: #1f3347; }
+.auth-form :deep(.el-input__inner::placeholder) { color: #98a8b3; }
+.auth-form :deep(.el-input__prefix-inner), .auth-form :deep(.el-input__suffix-inner) { color: #718393; }
 
 .submit-btn {
   width: 100%;
@@ -213,8 +213,8 @@ const handleRegister = async () => {
   margin-top: 13px;
   border: 0;
   border-radius: 6px;
-  background: #217fbf !important;
-  box-shadow: 0 10px 22px rgba(27, 133, 207, 0.25) !important;
+  background: #167bc5 !important;
+  box-shadow: 0 10px 22px rgba(22, 123, 197, 0.22) !important;
   animation: none !important;
   color: #fff !important;
   font-size: 15px;
@@ -223,8 +223,8 @@ const handleRegister = async () => {
 }
 
 .submit-btn:hover, .submit-btn:focus-visible {
-  background: #3196d7 !important;
-  box-shadow: 0 12px 25px rgba(43, 159, 222, 0.32) !important;
+  background: #0f6fad !important;
+  box-shadow: 0 12px 25px rgba(15, 111, 173, 0.26) !important;
   transform: translateY(-1px);
 }
 </style>
